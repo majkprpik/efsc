@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Sparkles, X, Loader2 } from "lucide-react";
+import { Send, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -171,41 +171,34 @@ export function EntityChat({
   );
 }
 
-/** Collapsible wrapper: a toggle button + slide-in panel on the right of a card. */
+/**
+ * Side panel with the AI assistant. Always open on desktop (md+).
+ * On mobile there's no room for a split view, so we show a short
+ * "still in progress — open on desktop" note instead.
+ */
 export function EntityChatPanel(props: {
   entityKind: string;
   entityId: string | null;
   title: string;
 }) {
-  const [open, setOpen] = useState(false);
-
-  if (!open) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="fixed bottom-6 right-6 z-20 shadow-md"
-        onClick={() => setOpen(true)}
-      >
-        <Sparkles className="size-4" /> AI asistent
-      </Button>
-    );
-  }
-
   return (
-    <div className="flex w-full min-w-0 shrink-0 flex-col border-l md:w-[360px]">
-      <div className="flex items-center justify-between border-b px-3 py-2">
+    <div className="hidden w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
+      <div className="flex items-center gap-2 border-b px-3 py-2">
         <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Razgovor</span>
-        <button
-          onClick={() => setOpen(false)}
-          className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          <X className="size-4" />
-        </button>
       </div>
       <div className="min-h-0 flex-1">
         <EntityChat {...props} />
       </div>
+    </div>
+  );
+}
+
+/** Mobile-only note shown where the AI panel would be on desktop. */
+export function EntityChatMobileNote() {
+  return (
+    <div className="flex items-center justify-center gap-2 border-t px-4 py-3 text-xs text-muted-foreground md:hidden">
+      <Sparkles className="size-3.5" />
+      AI asistent — još u izradi, otvori na desktopu.
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { Trophy, Folder, FileText, File } from "lucide-react";
-import { EntityChatPanel } from "@/components/EntityChat";
+import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
 
 export type Natjecaj = {
   id: string;
@@ -70,7 +70,7 @@ export function NatjecajiView({
   const selectedDocs = selected ? docs.filter((d) => d.natjecaj_id === selected.id) : [];
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
     <div className="grid min-h-0 flex-1 grid-cols-[280px_1fr] overflow-hidden">
       {/* LIST */}
       <div className="flex min-h-0 flex-col overflow-y-auto border-r">
@@ -204,6 +204,7 @@ export function NatjecajiView({
         title={selected.naziv}
       />
     )}
+    <EntityChatMobileNote />
     </div>
   );
 }
