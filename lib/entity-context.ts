@@ -20,6 +20,22 @@ export const ENTITY_LABEL: Record<EntityKind, string> = {
   financije: "financijama",
 };
 
+/** Entities whose chat is global (no per-item id). */
+const GLOBAL_KINDS = new Set<EntityKind>(["financije"]);
+
+export function isEntityKind(v: unknown): v is EntityKind {
+  return typeof v === "string" && v in ENTITY_LABEL;
+}
+
+export function requiresId(kind: EntityKind): boolean {
+  return !GLOBAL_KINDS.has(kind);
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isUuid(v: unknown): v is string {
+  return typeof v === "string" && UUID_RE.test(v);
+}
+
 function line(label: string, val: unknown): string {
   return val === null || val === undefined || val === "" ? "" : `${label}: ${val}\n`;
 }
@@ -31,11 +47,10 @@ export async function buildEntityContext(kind: EntityKind, id: string | null): P
   if (kind === "natjecaj" && id) {
     const { data: n } = await supabase.from("natjecaji").select("*").eq("id", id).single();
     if (!n) return "Natječaj nije pronađen.";
-    const { data: projs } = await supabase
-      .from("projects")
-      .select("naziv, status, progress, clients(naziv)")
-      .eq("natjecaj_id", id);
-    const { data: docs } = await supabase.from("natjecaj_docs").select("filename").eq("natjecaj_id", id);
+    const [{ data: projs }, { data: docs }] = await Promise.all([
+      supabase.from("projects").select("naziv, status, progress, clients(naziv)").eq("natjecaj_id", id),
+      supabase.from("natjecaj_docs").select("filename").eq("natjecaj_id", id),
+    ]);
     let s = `# Natječaj: ${n.naziv}\n`;
     s += line("Tijelo", n.tijelo);
     s += line("Iznos", n.iznos);
@@ -57,14 +72,10 @@ export async function buildEntityContext(kind: EntityKind, id: string | null): P
   if (kind === "klijent" && id) {
     const { data: c } = await supabase.from("clients").select("*").eq("id", id).single();
     if (!c) return "Klijent nije pronađen.";
-    const { data: projs } = await supabase
-      .from("projects")
-      .select("naziv, status, progress, rok, natjecaji(naziv)")
-      .eq("client_id", id);
-    const { data: fin } = await supabase
-      .from("finances")
-      .select("descr, amount, type, status")
-      .eq("client_id", id);
+    const [{ data: projs }, { data: fin }] = await Promise.all([
+      supabase.from("projects").select("naziv, status, progress, rok, natjecaji(naziv)").eq("client_id", id),
+      supabase.from("finances").select("descr, amount, type, status").eq("client_id", id),
+    ]);
     let s = `# Klijent: ${c.naziv}\n`;
     s += line("Kontakt", c.contact);
     s += line("Email", c.email);
@@ -114,14 +125,10 @@ export async function buildEntityContext(kind: EntityKind, id: string | null): P
       .eq("id", id)
       .single();
     if (!p) return "Projekt nije pronađen.";
-    const { data: docs } = await supabase
-      .from("project_docs")
-      .select("name, uploaded, note")
-      .eq("project_id", id);
-    const { data: tasks } = await supabase
-      .from("tasks")
-      .select("title, status, assignee_name, due")
-      .eq("project_id", id);
+    const [{ data: docs }, { data: tasks }] = await Promise.all([
+      supabase.from("project_docs").select("name, uploaded, note").eq("project_id", id),
+      supabase.from("tasks").select("title, status, assignee_name, due").eq("project_id", id),
+    ]);
     const c = p.clients as { naziv: string } | null;
     const n = p.natjecaji as { naziv: string } | null;
     let s = `# Projekt: ${p.naziv}\n`;

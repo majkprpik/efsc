@@ -1,34 +1,49 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOpenAI, CHAT_MODEL } from "@/lib/openai";
-import { buildEntityContext, ENTITY_LABEL, type EntityKind } from "@/lib/entity-context";
+import {
+  buildEntityContext,
+  ENTITY_LABEL,
+  isEntityKind,
+  isUuid,
+  requiresId,
+} from "@/lib/entity-context";
 import type { ChatCompletionMessageParam } from "openai/resources/index";
 
 type Body = {
-  entityKind: EntityKind;
+  entityKind: string;
   entityId: string | null;
   message: string;
 };
 
 const MAX_HISTORY = 30; // last N messages sent to the model
 
+/** Validate (kind, id): returns null if valid, or an error string. */
+function validate(kind: unknown, id: unknown): string | null {
+  if (!isEntityKind(kind)) return "Nepoznat tip entiteta.";
+  if (requiresId(kind)) {
+    if (!isUuid(id)) return "Neispravan ID entiteta.";
+  } else if (id !== null && id !== undefined && !isUuid(id)) {
+    return "Neispravan ID entiteta.";
+  }
+  return null;
+}
+
 /** Load stored history for an entity (shared per item). */
 export async function GET(req: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
+  const { data: claims } = await supabase.auth.getClaims();
+  if (!claims?.claims) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
 
   const url = new URL(req.url);
   const entityKind = url.searchParams.get("entityKind");
   const entityId = url.searchParams.get("entityId");
-  if (!entityKind) return NextResponse.json({ messages: [] });
+  if (validate(entityKind, entityId)) return NextResponse.json({ messages: [] });
 
   let q = supabase
     .from("chat_messages")
     .select("role, content, author_name")
-    .eq("entity_kind", entityKind)
+    .eq("entity_kind", entityKind!)
     .order("created_at", { ascending: true });
   q = entityId ? q.eq("entity_id", entityId) : q.is("entity_id", null);
   const { data } = await q;
@@ -45,65 +60,61 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
 
   const { entityKind, entityId, message } = (await req.json()) as Body;
-  if (!entityKind || !message?.trim()) {
-    return NextResponse.json({ error: "Nedostaje poruka." }, { status: 400 });
-  }
+  const validationError = validate(entityKind, entityId);
+  if (validationError) return NextResponse.json({ error: validationError }, { status: 400 });
+  if (!message?.trim()) return NextResponse.json({ error: "Nedostaje poruka." }, { status: 400 });
+
+  const kind = entityKind as Body["entityKind"] & keyof typeof ENTITY_LABEL;
+  const id = entityId ?? null;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("name")
-    .eq("id", user.id)
+    .eq("id", claims.sub)
     .single();
 
-  // 1. persist the user message
-  await supabase.from("chat_messages").insert({
-    entity_kind: entityKind,
-    entity_id: entityId,
-    role: "user",
-    content: message,
-    author_id: user.id,
-    author_name: profile?.name ?? null,
-  });
-
-  // 2. load history (shared per item)
+  // Load existing history (NOT yet including this new message)
   let histQuery = supabase
     .from("chat_messages")
     .select("role, content")
-    .eq("entity_kind", entityKind)
+    .eq("entity_kind", kind)
     .order("created_at", { ascending: false })
     .limit(MAX_HISTORY);
-  histQuery = entityId ? histQuery.eq("entity_id", entityId) : histQuery.is("entity_id", null);
+  histQuery = id ? histQuery.eq("entity_id", id) : histQuery.is("entity_id", null);
   const { data: hist } = await histQuery;
   const history = (hist ?? []).reverse();
 
-  // 3. entity context → system prompt
-  const context = await buildEntityContext(entityKind, entityId);
+  const context = await buildEntityContext(kind, id);
   const systemContent =
     `Ti si asistent u alatu za vođenje EU projekata (ESFC). Odgovaraš na hrvatskom, sažeto i konkretno, ` +
-    `na temelju podataka o ${ENTITY_LABEL[entityKind]} niže. Ako nešto nije u podacima, reci da nemaš tu informaciju.\n\n` +
+    `na temelju podataka o ${ENTITY_LABEL[kind]} niže. Ako nešto nije u podacima, reci da nemaš tu informaciju.\n\n` +
     `--- PODACI ---\n${context}`;
 
   const messages: ChatCompletionMessageParam[] = [
     { role: "system", content: systemContent },
     ...history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+    { role: "user", content: message },
   ];
 
-  const stream = await openai.chat.completions.create({
-    model: CHAT_MODEL,
-    stream: true,
-    messages,
-  });
+  // Start the completion BEFORE persisting anything — if OpenAI rejects
+  // (bad key, rate limit), we return an error and leave no orphan user message.
+  let stream;
+  try {
+    stream = await openai.chat.completions.create({ model: CHAT_MODEL, stream: true, messages });
+  } catch (e) {
+    return NextResponse.json({ error: `AI greška: ${(e as Error).message}` }, { status: 502 });
+  }
 
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
       let full = "";
+      let failed = false;
       try {
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta?.content;
@@ -113,24 +124,27 @@ export async function POST(req: Request) {
           }
         }
       } catch (e) {
-        const msg = `\n[Greška: ${(e as Error).message}]`;
-        full += msg;
-        controller.enqueue(encoder.encode(msg));
+        failed = true;
+        controller.enqueue(encoder.encode(`\n[Greška: ${(e as Error).message}]`));
       }
-      // 4. persist the assistant reply
-      if (full.trim()) {
-        await supabase.from("chat_messages").insert({
-          entity_kind: entityKind,
-          entity_id: entityId,
-          role: "assistant",
-          content: full,
-        });
+      // Persist user + assistant only on a clean, non-empty response — so the
+      // stored history never contains an error string or a dangling question.
+      if (!failed && full.trim()) {
+        await supabase.from("chat_messages").insert([
+          {
+            entity_kind: kind,
+            entity_id: id,
+            role: "user",
+            content: message,
+            author_id: claims.sub,
+            author_name: profile?.name ?? null,
+          },
+          { entity_kind: kind, entity_id: id, role: "assistant", content: full },
+        ]);
       }
       controller.close();
     },
   });
 
-  return new Response(readable, {
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
-  });
+  return new Response(readable, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }

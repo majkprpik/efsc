@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Sparkles, X } from "lucide-react";
+import { Send, Sparkles, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -27,6 +27,7 @@ export function EntityChat({
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // load stored history when the entity changes
@@ -34,6 +35,7 @@ export function EntityChat({
     let active = true;
     setInput("");
     setMessages([]);
+    setLoaded(false);
     const params = new URLSearchParams({ entityKind });
     if (entityId) params.set("entityId", entityId);
     fetch(`/api/entity-chat?${params}`)
@@ -41,7 +43,10 @@ export function EntityChat({
       .then((d) => {
         if (active && Array.isArray(d.messages)) setMessages(d.messages);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoaded(true);
+      });
     return () => {
       active = false;
     };
@@ -114,7 +119,11 @@ export function EntityChat({
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
-        {messages.length === 0 ? (
+        {!loaded ? (
+          <div className="flex h-full items-center justify-center text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+          </div>
+        ) : messages.length === 0 ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">Pitaj bilo što o ovoj stavci.</p>
             <div className="flex flex-col gap-2">
