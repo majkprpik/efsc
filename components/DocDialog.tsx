@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { File, Check, X } from "lucide-react";
+import { File, Check, X, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,13 @@ export function DocDialog({
       <DialogTrigger
         disabled={!canOpen}
         render={
-          <button className="flex flex-1 items-center gap-3 text-left disabled:cursor-default">
+          <button
+            className={
+              canOpen
+                ? "group flex flex-1 cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 text-left transition hover:bg-accent"
+                : "flex flex-1 cursor-default items-center gap-3 px-2 py-1.5 text-left"
+            }
+          >
             <span
               className={
                 uploaded
@@ -43,11 +49,24 @@ export function DocDialog({
               {uploaded ? <File className="size-4" /> : <X className="size-4" />}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm">{fileName}</span>
+              <span
+                className={
+                  canOpen
+                    ? "block truncate text-sm font-medium text-foreground underline-offset-2 group-hover:underline"
+                    : "block truncate text-sm"
+                }
+              >
+                {fileName}
+              </span>
               <span className="block text-xs text-muted-foreground">
-                {uploaded ? "otvori & pitaj AI" : "nije uploadano"}
+                {uploaded ? "klikni za pregled i AI chat" : "nije uploadano"}
               </span>
             </span>
+            {canOpen && (
+              <span className="flex shrink-0 items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs text-muted-foreground transition group-hover:border-primary group-hover:text-primary">
+                <Eye className="size-3.5" /> Otvori
+              </span>
+            )}
           </button>
         }
       />

@@ -1,12 +1,13 @@
 import "server-only";
 
-export type DocKind = "pdf" | "docx" | "xlsx" | "image" | "other";
+export type DocKind = "pdf" | "docx" | "xlsx" | "image" | "text" | "other";
 
 export function docKindFromName(name: string): DocKind {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   if (ext === "pdf") return "pdf";
   if (ext === "docx" || ext === "doc") return "docx";
-  if (ext === "xlsx" || ext === "xls" || ext === "csv") return "xlsx";
+  if (ext === "xlsx" || ext === "xls") return "xlsx";
+  if (["txt", "csv", "md", "log", "json", "xml", "yml", "yaml"].includes(ext)) return "text";
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
   return "other";
 }
@@ -14,6 +15,9 @@ export function docKindFromName(name: string): DocKind {
 /** Extract plain text from a document buffer. Images return "" (handled via vision). */
 export async function extractText(buf: Buffer, kind: DocKind): Promise<string> {
   try {
+    if (kind === "text") {
+      return buf.toString("utf-8");
+    }
     if (kind === "pdf") {
       const { extractText: pdfExtract, getDocumentProxy } = await import("unpdf");
       const pdf = await getDocumentProxy(new Uint8Array(buf));

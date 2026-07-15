@@ -5,13 +5,14 @@ import { FileText, Download, Loader2 } from "lucide-react";
 import { getSignedUrl } from "@/app/(app)/doc-actions";
 import { Button } from "@/components/ui/button";
 
-type Kind = "pdf" | "docx" | "xlsx" | "image" | "other";
+type Kind = "pdf" | "docx" | "xlsx" | "image" | "text" | "other";
 
 function kindOf(name: string): Kind {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   if (ext === "pdf") return "pdf";
   if (ext === "docx" || ext === "doc") return "docx";
-  if (ext === "xlsx" || ext === "xls" || ext === "csv") return "xlsx";
+  if (ext === "xlsx" || ext === "xls") return "xlsx";
+  if (["txt", "csv", "md", "log", "json", "xml", "yml", "yaml"].includes(ext)) return "text";
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image";
   return "other";
 }
@@ -19,21 +20,32 @@ function kindOf(name: string): Kind {
 export function DocViewer({ storagePath, fileName }: { storagePath: string; fileName: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [textContent, setTextContent] = useState<string | null>(null);
   const kind = kindOf(fileName);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getSignedUrl(storagePath).then((u) => {
-      if (active) {
-        setUrl(u);
-        setLoading(false);
+    setTextContent(null);
+    getSignedUrl(storagePath).then(async (u) => {
+      if (!active) return;
+      setUrl(u);
+      // Text files: fetch the content and render inline
+      if (u && kind === "text") {
+        try {
+          const res = await fetch(u);
+          const txt = await res.text();
+          if (active) setTextContent(txt);
+        } catch {
+          if (active) setTextContent(null);
+        }
       }
+      if (active) setLoading(false);
     });
     return () => {
       active = false;
     };
-  }, [storagePath]);
+  }, [storagePath, kind]);
 
   if (loading) {
     return (
@@ -60,6 +72,16 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
       <div className="flex h-full items-center justify-center overflow-auto bg-muted/30 p-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={url} alt={fileName} className="max-h-full max-w-full object-contain" />
+      </div>
+    );
+  }
+
+  if (kind === "text") {
+    return (
+      <div className="h-full overflow-auto bg-muted/20 p-4">
+        <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-foreground">
+          {textContent ?? "Prazna datoteka."}
+        </pre>
       </div>
     );
   }
