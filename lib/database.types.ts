@@ -188,7 +188,15 @@ export type Database = {
           status?: string
           type?: Database["public"]["Enums"]["fin_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "finances_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       natjecaj_docs: {
         Row: {
