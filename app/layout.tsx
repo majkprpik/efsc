@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { DM_Sans, Instrument_Serif } from "next/font/google";
+import { Geist, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
@@ -28,15 +26,13 @@ export default function RootLayout({
   return (
     <html
       lang="hr"
-      className={`${dmSans.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={cn("h-full antialiased", geist.variable, instrumentSerif.variable)}
+      suppressHydrationWarning
     >
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"
-        />
-      </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full font-sans">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

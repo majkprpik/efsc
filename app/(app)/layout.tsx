@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/Sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ini } from "@/lib/ui";
 
 export default async function AppLayout({
@@ -33,8 +34,8 @@ export default async function AppLayout({
   const email = profile?.email || user.email || "";
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
+    <SidebarProvider>
+      <AppSidebar
         counts={{
           klijenti: klijenti.count ?? 0,
           potencijalni: potencijalni.count ?? 0,
@@ -43,9 +44,7 @@ export default async function AppLayout({
         }}
         profile={{ name, email, initials: ini(name) }}
       />
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {children}
-      </main>
-    </div>
+      <SidebarInset className="overflow-hidden">{children}</SidebarInset>
+    </SidebarProvider>
   );
 }

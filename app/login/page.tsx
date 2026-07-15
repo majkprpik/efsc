@@ -1,4 +1,8 @@
 import { login, signup } from "./actions";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default async function LoginPage({
   searchParams,
@@ -8,72 +12,49 @@ export default async function LoginPage({
   const sp = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
-      <div className="w-full max-w-sm rounded-[var(--r)] border border-b bg-bg2 p-8">
-        <div className="mb-6 text-center">
-          <div className="font-serif text-3xl text-gold">Orbit</div>
-          <div className="mt-1 text-[10px] uppercase tracking-[1.5px] text-t3">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="font-serif text-3xl tracking-tight">Orbit</div>
+          <div className="text-[11px] uppercase tracking-[2px] text-muted-foreground">
             projektni hub · esfc.hr
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          {sp.error && (
+            <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {sp.error}
+            </div>
+          )}
+          {sp.message && (
+            <div className="mb-4 rounded-md border border-green-600/30 bg-green-600/10 px-3 py-2 text-xs text-green-700 dark:text-green-400">
+              {sp.message}
+            </div>
+          )}
 
-        {sp.error && (
-          <div className="mb-4 rounded-[var(--rs)] border border-[var(--rb)] bg-[var(--rb)] px-3 py-2 text-xs text-red">
-            {sp.error}
-          </div>
-        )}
-        {sp.message && (
-          <div className="mb-4 rounded-[var(--rs)] border border-[var(--grb)] bg-[var(--grb)] px-3 py-2 text-xs text-green">
-            {sp.message}
-          </div>
-        )}
+          <form className="flex flex-col gap-4">
+            <div className="grid gap-1.5">
+              <Label htmlFor="name">Ime i prezime (za registraciju)</Label>
+              <Input id="name" name="name" placeholder="Ana Kovač" />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="email">E-mail</Label>
+              <Input id="email" name="email" type="email" placeholder="ana@esfc.hr" required />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="password">Lozinka</Label>
+              <Input id="password" name="password" type="password" placeholder="••••••••" required />
+            </div>
 
-        <form className="flex flex-col gap-3">
-          <Field name="name" label="Ime i prezime (za registraciju)" placeholder="Ana Kovač" />
-          <Field name="email" label="E-mail" type="email" placeholder="ana@esfc.hr" required />
-          <Field name="password" label="Lozinka" type="password" placeholder="••••••••" required />
-
-          <button
-            formAction={login}
-            className="mt-2 rounded-[var(--rs)] bg-gold px-4 py-2.5 text-sm font-semibold text-bg transition hover:bg-gold2"
-          >
-            Prijava
-          </button>
-          <button
-            formAction={signup}
-            className="rounded-[var(--rs)] border border-b2 px-4 py-2.5 text-sm text-t2 transition hover:border-b3 hover:text-t"
-          >
-            Registracija
-          </button>
-        </form>
-      </div>
+            <Button formAction={login} className="mt-1 w-full">
+              Prijava
+            </Button>
+            <Button formAction={signup} variant="outline" className="w-full">
+              Registracija
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  );
-}
-
-function Field({
-  name,
-  label,
-  type = "text",
-  placeholder,
-  required,
-}: {
-  name: string;
-  label: string;
-  type?: string;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] uppercase tracking-[1px] text-t3">{label}</span>
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        required={required}
-        className="rounded-[var(--rs)] border border-b2 bg-bg3 px-3 py-2.5 text-sm text-t outline-none placeholder:text-t3 focus:border-[var(--gb2)]"
-      />
-    </label>
   );
 }
