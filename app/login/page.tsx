@@ -52,10 +52,10 @@ export default async function LoginPage({
               Demo pristup je predpopunjen — samo klikni Prijava.
             </p>
 
-            <Button formAction={login} className="mt-1 w-full">
+            <Button type="submit" formAction={login} className="mt-1 w-full">
               Prijava
             </Button>
-            <Button formAction={signup} variant="outline" className="w-full">
+            <Button type="submit" formAction={signup} variant="outline" className="w-full">
               Registracija
             </Button>
           </form>
