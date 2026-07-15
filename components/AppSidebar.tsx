@@ -27,6 +27,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Item = {
   href: string;
@@ -117,6 +118,7 @@ export function AppSidebar({
             <div className="truncate text-sm font-medium">{profile.name}</div>
             <div className="truncate text-xs text-muted-foreground">{profile.email}</div>
           </div>
+          <ThemeToggle />
           <form action="/auth/signout" method="post">
             <button
               type="submit"

@@ -125,6 +125,19 @@
   }
 }
 
+/* Diagonal theme transition: new theme clips in over the old one */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
