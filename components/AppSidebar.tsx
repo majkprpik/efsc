@@ -68,7 +68,7 @@ export function AppSidebar({
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-4">
-        <div className="font-serif text-2xl leading-none tracking-tight">Orbit</div>
+        <div className="text-xl font-semibold leading-none tracking-tight">Orbit</div>
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted-foreground">
           projektni hub · esfc.hr
         </div>

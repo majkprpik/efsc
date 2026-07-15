@@ -108,7 +108,7 @@ export default async function NatjecajiPage({
                   <Trophy className="size-6" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-serif text-2xl leading-tight tracking-tight">{selected.naziv}</div>
+                  <div className="text-2xl font-semibold leading-tight tracking-tight">{selected.naziv}</div>
                   <div className="mt-1 text-sm text-muted-foreground">
                     {[
                       selected.tijelo,

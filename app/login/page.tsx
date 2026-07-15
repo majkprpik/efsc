@@ -15,7 +15,7 @@ export default async function LoginPage({
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="font-serif text-3xl tracking-tight">Orbit</div>
+          <div className="text-3xl font-semibold tracking-tight">Orbit</div>
           <div className="text-[11px] uppercase tracking-[2px] text-muted-foreground">
             projektni hub · esfc.hr
           </div>
