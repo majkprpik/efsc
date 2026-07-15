@@ -12,6 +12,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          content: string
+          created_at: string
+          entity_id: string | null
+          entity_kind: string
+          id: string
+          role: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          content: string
+          created_at?: string
+          entity_id?: string | null
+          entity_kind: string
+          id?: string
+          role: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_kind?: string
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
       document_text: {
         Row: {
           char_count: number

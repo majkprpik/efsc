@@ -25,10 +25,14 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // IMPORTANT: do not run code between createServerClient and getUser().
+  // IMPORTANT: do not run code between createServerClient and the auth call.
+  // getClaims() verifies the JWT locally against the project's published keys
+  // (this project signs with ES256), so it costs no round-trip to the Auth
+  // server the way getUser() does — on every request, that was most of the wait.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: claims,
+  } = await supabase.auth.getClaims();
+  const user = claims?.claims;
 
   const { pathname } = request.nextUrl;
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/auth");

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { RowPending } from "@/components/RowPending";
 
 type Item = {
   href: string;
@@ -94,6 +95,7 @@ export function AppSidebar({
                           <Link href={item.href}>
                             <Icon className="size-4" />
                             <span>{item.label}</span>
+                            <RowPending />
                           </Link>
                         }
                       />

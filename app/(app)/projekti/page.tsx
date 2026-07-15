@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader, StatusBadge, Empty, Dot } from "@/components/shared";
+import { RowPending } from "@/components/RowPending";
 import { DocDialog } from "@/components/DocDialog";
 import { DocUploadButton, DocDropzone } from "@/components/DocUpload";
 import { shortDate } from "@/lib/ui";
@@ -102,6 +103,7 @@ export default async function ProjektiPage({
                     <div className="truncate text-xs text-muted-foreground">{c?.naziv ?? "—"}</div>
                     <Progress value={p.progress} className="mt-1.5 h-1" />
                   </div>
+                  <RowPending />
                   <StatusBadge status={p.status} />
                 </Link>
               );
