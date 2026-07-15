@@ -20,7 +20,7 @@ export type Projekt = {
   color: string;
   rok: string | null;
   value: string | null;
-  folder_path: string | null;
+  folder_path: string;
   clientNaziv: string | null;
   natjecaj: { id: string; naziv: string } | null;
 };
@@ -35,7 +35,7 @@ export type ProjDoc = {
 };
 export type ProjTask = {
   id: string;
-  project_id: string;
+  project_id: string | null;
   title: string;
   status: string;
   assignee_name: string | null;
