@@ -80,7 +80,7 @@ export default async function KlijentiPage({
 
   return (
     <>
-      <PageHeader title="Klijenti" />
+      <PageHeader section="klijenti" title="Klijenti" />
       <KlijentiView
         clients={clients}
         projects={projects}

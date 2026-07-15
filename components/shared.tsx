@@ -1,14 +1,68 @@
 import type { ReactNode } from "react";
+import {
+  File as FileIcon,
+  LayoutDashboard,
+  Users,
+  UserPlus,
+  Trophy,
+  Folder,
+  ListChecks,
+  Clock,
+  Coins,
+} from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
+/**
+ * Each main section owns a colour and an icon. Links jump between sections
+ * constantly (a project opens its tender, a tender lists its projects), so the
+ * page needs to announce where you landed without you having to read the title.
+ */
+export const SECTION_ACCENTS: Record<
+  string,
+  { key: string; label: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  "/": { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  "/klijenti": { key: "klijenti", label: "Klijenti", icon: Users },
+  "/potencijalni": { key: "potencijalni", label: "Potencijalni", icon: UserPlus },
+  "/natjecaji": { key: "natjecaji", label: "Natječaji", icon: Trophy },
+  "/projekti": { key: "projekti", label: "Projekti", icon: Folder },
+  "/taskovi": { key: "taskovi", label: "Taskovi", icon: ListChecks },
+  "/rokovi": { key: "rokovi", label: "Rokovi", icon: Clock },
+  "/financije": { key: "financije", label: "Financije", icon: Coins },
+};
+
+export function sectionOf(pathname: string) {
+  if (pathname === "/") return SECTION_ACCENTS["/"];
+  const hit = Object.keys(SECTION_ACCENTS).find((h) => h !== "/" && pathname.startsWith(h));
+  return hit ? SECTION_ACCENTS[hit] : undefined;
+}
+
+export function PageHeader({
+  title,
+  section,
+  children,
+}: {
+  title: string;
+  /** Section key from SECTION_ACCENTS; colours the header for this page. */
+  section?: string;
+  children?: ReactNode;
+}) {
+  const accent = section ? SECTION_ACCENTS[`/${section}`] ?? SECTION_ACCENTS["/"] : undefined;
+  const Icon = accent?.icon;
+
+  // The hue comes from SectionShell, which wraps the whole page.
   return (
-    <header className="flex h-14 flex-shrink-0 items-center gap-3 border-b px-4">
+    <header className="section-header relative flex h-14 flex-shrink-0 items-center gap-3 border-b px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-1 h-5" />
+      {Icon && (
+        <span className="section-chip flex size-7 shrink-0 items-center justify-center rounded-md">
+          <Icon className="size-4" />
+        </span>
+      )}
       <h1 className="flex-1 text-lg font-semibold tracking-tight">{title}</h1>
       {children}
     </header>
@@ -103,4 +157,42 @@ export function Loading({ label = "Učitavanje…" }: { label?: string }) {
 
 export function Dot({ color }: { color: string }) {
   return <span className="size-2 shrink-0 rounded-full" style={{ background: color }} />;
+}
+
+const DOC_TYPES: Record<string, { label: string; cls: string }> = {
+  pdf: { label: "PDF", cls: "bg-red-500/15 text-red-600 dark:text-red-400" },
+  docx: { label: "Word", cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
+  doc: { label: "Word", cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
+  xlsx: { label: "Excel", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+  xls: { label: "Excel", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+  txt: { label: "Tekst", cls: "bg-muted text-muted-foreground" },
+  csv: { label: "CSV", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+  png: { label: "Slika", cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
+  jpg: { label: "Slika", cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
+  jpeg: { label: "Slika", cls: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
+};
+
+const extOf = (fileName: string) => fileName.split(".").pop()?.toLowerCase() ?? "";
+
+/** Human label for a file's type, e.g. "Word". Falls back to the extension. */
+export function docLabel(fileName: string) {
+  const ext = extOf(fileName);
+  return DOC_TYPES[ext]?.label ?? ext.toUpperCase();
+}
+
+/** Type-coloured file icon. Tells PDF from Word at a glance. */
+export function DocTypeIcon({ fileName, className }: { fileName: string; className?: string }) {
+  const ext = extOf(fileName);
+  const type = DOC_TYPES[ext];
+  return (
+    <span
+      className={cn(
+        "flex size-9 shrink-0 items-center justify-center rounded-md [&_svg]:size-4",
+        type?.cls ?? "bg-muted text-muted-foreground",
+        className,
+      )}
+    >
+      <FileIcon />
+    </span>
+  );
 }

@@ -95,9 +95,10 @@ export function ProjektiView({
           ))}
         </div>
         {filtered.length ? (
-          filtered.map((p) => (
+          filtered.map((p, i) => (
             <button
               key={p.id}
+              data-tour={`proj-row-${i}`}
               onClick={() => setSelectedId(p.id)}
               className={cn(
                 "flex items-center gap-3 border-b px-4 py-3 text-left hover:bg-muted/50",
@@ -142,7 +143,7 @@ export function ProjektiView({
               <StatusBadge status={selected.status} />
             </div>
 
-            <div className="mb-5 grid grid-cols-3 gap-3">
+            <div data-tour="proj-info" className="mb-5 grid grid-cols-3 gap-3">
               <Info label="Napredak" value={`${selected.progress}%`} />
               <Info label="Rok" value={shortDate(selected.rok)} />
               <Info
@@ -157,6 +158,7 @@ export function ProjektiView({
             {selected.natjecaj && (
               <Link
                 href={`/natjecaji?id=${selected.natjecaj.id}`}
+                data-tour="proj-natjecaj-link"
                 className="mb-5 flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-2.5 text-sm hover:bg-muted"
               >
                 <Trophy className="size-4 shrink-0 text-muted-foreground" />
@@ -190,6 +192,8 @@ export function ProjektiView({
                         storagePath={d.storage_path}
                         fileName={d.name}
                         uploaded={d.uploaded}
+                        uploadedAt={d.uploaded_at}
+                        context={selected.naziv}
                       />
                       {d.uploaded ? (
                         <Badge className="border-transparent bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { File, Check, X, Eye } from "lucide-react";
+import { File, X, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { DocViewer } from "@/components/DocViewer";
 import { DocChat } from "@/components/DocChat";
+import { DocDialogHeader } from "@/components/DocDialogHeader";
 
 export function DocDialog({
   docKind,
@@ -17,12 +18,17 @@ export function DocDialog({
   storagePath,
   fileName,
   uploaded,
+  uploadedAt,
+  context,
 }: {
   docKind: "project" | "natjecaj";
   docId: string;
   storagePath: string | null;
   fileName: string;
   uploaded: boolean;
+  uploadedAt?: string | null;
+  /** Where this document lives — project or tender name. */
+  context?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const canOpen = uploaded && !!storagePath;
@@ -71,12 +77,20 @@ export function DocDialog({
         }
       />
       {canOpen && (
-        <DialogContent className="h-[85vh] max-w-[95vw] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-6xl">
-          <DialogTitle className="flex items-center gap-2 border-b px-4 py-3 text-sm font-medium">
-            <Check className="size-4 text-emerald-600" />
-            {fileName}
-          </DialogTitle>
-          <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[1.4fr_1fr]">
+        // DialogContent is itself a grid, so the body needs an explicit
+        // auto+1fr track — flex-1 did nothing here and left a gap under
+        // the header.
+        <DialogContent className="grid h-[85vh] max-w-[95vw] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-6xl">
+          {/* Screen readers need a title; the visible header below carries the
+              same name plus type, date and origin. */}
+          <DialogTitle className="sr-only">{fileName}</DialogTitle>
+          <DocDialogHeader
+            fileName={fileName}
+            storagePath={storagePath!}
+            uploadedAt={uploadedAt}
+            context={context}
+          />
+          <div className="grid min-h-0 grid-cols-1 md:grid-cols-[1.4fr_1fr]">
             <div className="min-h-0 border-r">
               <DocViewer storagePath={storagePath!} fileName={fileName} />
             </div>

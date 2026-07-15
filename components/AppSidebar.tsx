@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,6 +13,7 @@ import {
   Clock,
   Coins,
   LogOut,
+  Share2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +31,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RowPending } from "@/components/RowPending";
+import { sectionOf } from "@/components/shared";
+import { TourLauncher } from "@/components/TourLauncher";
 
 type Item = {
   href: string;
@@ -53,6 +57,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { href: "/taskovi", label: "Taskovi", icon: ListChecks },
       { href: "/rokovi", label: "Rokovi", icon: Clock },
+      { href: "/portal-admin", label: "Portal", icon: Share2 },
     ],
   },
   { title: "Analitika", items: [{ href: "/financije", label: "Financije", icon: Coins }] },
@@ -88,9 +93,10 @@ export function AppSidebar({
                   const Icon = item.icon;
                   const badge = item.badgeKey ? counts[item.badgeKey] : undefined;
                   return (
-                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuItem key={item.href} data-section={sectionOf(item.href)?.key}>
                       <SidebarMenuButton
                         isActive={active}
+                        data-tour={`nav-${item.label.toLowerCase()}`}
                         render={
                           <Link href={item.href}>
                             <Icon className="size-4" />
@@ -112,6 +118,9 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter className="border-t">
+        <Suspense fallback={null}>
+          <TourLauncher />
+        </Suspense>
         <div className="flex items-center gap-2.5 px-1 py-1">
           <Avatar className="size-8">
             <AvatarFallback className="text-xs">{profile.initials}</AvatarFallback>

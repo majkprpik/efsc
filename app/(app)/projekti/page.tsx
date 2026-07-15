@@ -41,7 +41,7 @@ export default async function ProjektiPage({
 
   return (
     <>
-      <PageHeader title="Projekti" />
+      <PageHeader section="projekti" title="Projekti" />
       <ProjektiView
         projects={projects}
         docs={(docRows ?? []) as ProjDoc[]}

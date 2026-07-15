@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/AppSidebar";
+import { DemoBridge } from "@/components/DemoBridge";
+import { SectionShell } from "@/components/SectionShell";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ini } from "@/lib/ui";
 
@@ -72,7 +74,14 @@ export default async function AppLayout({
       >
         <SidebarWithCounts profile={profileProps} />
       </Suspense>
-      <SidebarInset className="overflow-hidden">{children}</SidebarInset>
+      <SidebarInset className="overflow-hidden">
+        <SectionShell>{children}</SectionShell>
+      </SidebarInset>
+      {/* Inert unless ?demo=1. Suspense is required: useSearchParams would
+          otherwise opt every route in this layout into client-side rendering. */}
+      <Suspense fallback={null}>
+        <DemoBridge />
+      </Suspense>
     </SidebarProvider>
   );
 }

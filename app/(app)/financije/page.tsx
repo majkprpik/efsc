@@ -21,7 +21,7 @@ export default async function FinancijePage() {
 
   return (
     <>
-      <PageHeader title="Financije" />
+      <PageHeader section="financije" title="Financije" />
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Stat label="Ukupno prihodi" value={`${eur(ukupnoPrihod)} EUR`} />

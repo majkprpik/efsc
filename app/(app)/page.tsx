@@ -50,13 +50,13 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" />
+      <PageHeader section="dashboard" title="Dashboard" />
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Aktivni klijenti" value={activeClients ?? 0} icon={Users} />
-          <Stat label="Aktivni projekti" value={activeProjects ?? 0} icon={FolderKanban} />
-          <Stat label="Potencijalni" value={potencijalni ?? 0} icon={UserPlus} />
-          <Stat label="Rokovi ovaj tjedan" value={thisWeek} icon={CalendarClock} accent={thisWeek > 0} />
+        <div data-tour="stat-row" className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Stat tour="stat-klijenti" label="Aktivni klijenti" value={activeClients ?? 0} icon={Users} />
+          <Stat tour="stat-projekti" label="Aktivni projekti" value={activeProjects ?? 0} icon={FolderKanban} />
+          <Stat tour="stat-potencijalni" label="Potencijalni" value={potencijalni ?? 0} icon={UserPlus} />
+          <Stat tour="stat-rokovi" label="Rokovi ovaj tjedan" value={thisWeek} icon={CalendarClock} accent={thisWeek > 0} />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
@@ -192,14 +192,16 @@ function Stat({
   value,
   icon: Icon,
   accent,
+  tour,
 }: {
   label: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
   accent?: boolean;
+  tour?: string;
 }) {
   return (
-    <Card>
+    <Card data-tour={tour}>
       <CardContent className="flex items-center justify-between p-6">
         <div>
           <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>

@@ -35,6 +35,9 @@
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-active: oklch(0.928 0 0);
+  --sidebar-active-foreground: oklch(0.145 0 0);
+  --sidebar-active-rail: oklch(0.54 0.22 258);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
@@ -69,6 +72,9 @@
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-active: oklch(0.34 0 0);
+  --sidebar-active-foreground: oklch(1 0 0);
+  --sidebar-active-rail: oklch(0.62 0.19 253);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
@@ -188,3 +194,168 @@
 @media (prefers-reduced-motion: reduce) {
   .row-hint.is-pending { animation: none; opacity: 1; }
 }
+
+/* Active nav item: the shared --sidebar-accent is also the hover colour, so an
+   active item was nearly indistinguishable from a hovered one. Give it its own
+   fill plus a brand-blue rail. */
+/* The active item wears its section's colour, not a grey fill — grey said
+   "selected" but never *which* page, and against the near-white sidebar it was
+   barely a 5% step. Now the nav and the page you land on agree. */
+[data-sidebar="menu-button"][data-active] {
+  position: relative;
+  background: color-mix(in oklab, var(--section, var(--sidebar-active-rail)) 16%, transparent);
+  color: color-mix(in oklab, var(--section, var(--sidebar-active-rail)) 75%, var(--foreground));
+  font-weight: 600;
+}
+.dark [data-sidebar="menu-button"][data-active] {
+  background: color-mix(in oklab, var(--section, var(--sidebar-active-rail)) 22%, transparent);
+  color: color-mix(in oklab, var(--section, var(--sidebar-active-rail)) 55%, var(--foreground));
+}
+[data-sidebar="menu-button"][data-active]:hover {
+  background: color-mix(in oklab, var(--section, var(--sidebar-active-rail)) 24%, transparent);
+}
+[data-sidebar="menu-button"][data-active]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  height: 70%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  /* Falls back to brand blue when the item isn't inside a [data-section]. */
+  background: var(--section, var(--sidebar-active-rail));
+}
+/* The active item's icon and count badge follow the same hue. */
+[data-section] [data-sidebar="menu-button"][data-active] svg,
+[data-section] [data-sidebar="menu-button"][data-active] + [data-slot="sidebar-menu-badge"] {
+  color: var(--section);
+}
+
+/* ---- Section accents -------------------------------------------------------
+   Links jump between sections constantly (a project opens its tender, a tender
+   lists its projects), and the title alone was too easy to miss — you had to
+   read to know where you'd landed. So the whole page is tinted with the
+   section's hue: unmistakable on arrival, still calm enough to work in.
+
+   --section     the saturated hue (icon, rail, chip text)
+   --section-bg  a soft fill behind the icon chip
+   --section-page  the page wash — deliberately weak; cards stay --card, so
+                   contrast for text is untouched. */
+[data-section] {
+  --section: var(--muted-foreground);
+  --section-bg: var(--muted);
+  --section-page: var(--background);
+}
+[data-section="dashboard"]    { --section: oklch(0.55 0.02 260); --section-bg: oklch(0.55 0.02 260 / 12%); --section-page: oklch(0.970 0.008 260); }
+[data-section="klijenti"]     { --section: oklch(0.55 0.20 258); --section-bg: oklch(0.55 0.20 258 / 12%); --section-page: oklch(0.962 0.022 258); }
+[data-section="potencijalni"] { --section: oklch(0.62 0.17 55);  --section-bg: oklch(0.62 0.17 55 / 14%);  --section-page: oklch(0.965 0.026 55); }
+[data-section="natjecaji"]    { --section: oklch(0.58 0.19 300); --section-bg: oklch(0.58 0.19 300 / 12%); --section-page: oklch(0.962 0.021 300); }
+[data-section="projekti"]     { --section: oklch(0.55 0.15 195); --section-bg: oklch(0.55 0.15 195 / 14%); --section-page: oklch(0.963 0.024 195); }
+[data-section="taskovi"]      { --section: oklch(0.55 0.16 150); --section-bg: oklch(0.55 0.16 150 / 14%); --section-page: oklch(0.965 0.024 150); }
+[data-section="rokovi"]       { --section: oklch(0.58 0.20 25);  --section-bg: oklch(0.58 0.20 25 / 12%);  --section-page: oklch(0.965 0.020 25); }
+[data-section="financije"]    { --section: oklch(0.60 0.14 85);  --section-bg: oklch(0.60 0.14 85 / 16%);  --section-page: oklch(0.968 0.028 85); }
+
+.dark [data-section="dashboard"]    { --section: oklch(0.72 0.03 260); --section-bg: oklch(0.72 0.03 260 / 18%); --section-page: oklch(0.170 0.010 260); }
+.dark [data-section="klijenti"]     { --section: oklch(0.70 0.17 258); --section-bg: oklch(0.70 0.17 258 / 20%); --section-page: oklch(0.178 0.024 258); }
+.dark [data-section="potencijalni"] { --section: oklch(0.76 0.15 60);  --section-bg: oklch(0.76 0.15 60 / 20%);  --section-page: oklch(0.178 0.022 60); }
+.dark [data-section="natjecaji"]    { --section: oklch(0.72 0.16 300); --section-bg: oklch(0.72 0.16 300 / 20%); --section-page: oklch(0.178 0.023 300); }
+.dark [data-section="projekti"]     { --section: oklch(0.72 0.13 195); --section-bg: oklch(0.72 0.13 195 / 20%); --section-page: oklch(0.176 0.021 195); }
+.dark [data-section="taskovi"]      { --section: oklch(0.72 0.14 150); --section-bg: oklch(0.72 0.14 150 / 20%); --section-page: oklch(0.176 0.021 150); }
+.dark [data-section="rokovi"]       { --section: oklch(0.70 0.17 25);  --section-bg: oklch(0.70 0.17 25 / 20%);  --section-page: oklch(0.178 0.022 25); }
+.dark [data-section="financije"]    { --section: oklch(0.78 0.13 85);  --section-bg: oklch(0.78 0.13 85 / 20%);  --section-page: oklch(0.178 0.021 85); }
+
+/* The wash itself. Cards, dialogs and inputs keep their own backgrounds, so
+   text contrast is unaffected no matter how strong the tint gets. */
+.section-page {
+  background: var(--section-page);
+}
+/* Header and the master list sit a shade deeper than the detail pane, so the
+   tint reads as depth rather than a flat colour field. */
+.section-header {
+  background: color-mix(in oklab, var(--section) 8%, var(--section-page));
+}
+.section-chip {
+  background: var(--section-bg);
+  color: var(--section);
+}
+
+/* ---- AI assistant panel ----------------------------------------------------
+   The panel was all muted-foreground on hairline borders, which washed out
+   entirely once the page carried a tint. It now sits on its own surface and
+   borrows the section hue for its accents, so it reads as a live tool. */
+.chat-panel {
+  background: color-mix(in oklab, var(--card) 88%, var(--section, transparent));
+  border-color: color-mix(in oklab, var(--section, var(--border)) 22%, var(--border));
+}
+.chat-header {
+  background: color-mix(in oklab, var(--section, transparent) 7%, var(--card));
+  border-color: color-mix(in oklab, var(--section, var(--border)) 25%, var(--border));
+}
+.chat-mark {
+  background: color-mix(in oklab, var(--section, var(--primary)) 18%, transparent);
+  color: var(--section, var(--primary));
+}
+.chat-composer {
+  border-color: color-mix(in oklab, var(--section, var(--border)) 25%, var(--border));
+}
+
+/* Suggestion chips: readable at rest, clearly clickable on hover. */
+.chat-suggestion {
+  color: var(--foreground);
+  border-color: color-mix(in oklab, var(--section, var(--border)) 30%, var(--border));
+  background: var(--card);
+}
+.chat-suggestion:hover {
+  border-color: var(--section, var(--primary));
+  background: color-mix(in oklab, var(--section, var(--primary)) 10%, var(--card));
+  color: var(--foreground);
+}
+
+/* Bubbles: the AI's reply used bg-muted, which vanished against a tinted page. */
+.chat-bubble-ai {
+  background: var(--card);
+  border-color: color-mix(in oklab, var(--section, var(--border)) 28%, var(--border));
+  color: var(--foreground);
+}
+.chat-bubble-user {
+  background: color-mix(in oklab, var(--section, var(--primary)) 88%, var(--foreground));
+  color: oklch(0.99 0 0);
+}
+.dark .chat-bubble-user {
+  background: color-mix(in oklab, var(--section, var(--primary)) 42%, var(--card));
+  color: var(--foreground);
+}
+
+/* ---- Rendered .docx --------------------------------------------------------
+   mammoth emits bare <p>/<h1>/<table> with no classes, and the Tailwind reset
+   strips their default styling — without this the document renders as one flat
+   wall of text. */
+.doc-prose {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.doc-prose > * + * { margin-top: 0.75rem; }
+.doc-prose h1 { font-size: 1.35rem; font-weight: 650; letter-spacing: -0.01em; margin-top: 1.5rem; }
+.doc-prose h2 { font-size: 1.15rem; font-weight: 650; margin-top: 1.35rem; }
+.doc-prose h3 { font-size: 1rem;    font-weight: 650; margin-top: 1.2rem; }
+.doc-prose h1:first-child,
+.doc-prose h2:first-child,
+.doc-prose h3:first-child { margin-top: 0; }
+.doc-prose strong { font-weight: 650; }
+.doc-prose em { font-style: italic; }
+.doc-prose a { color: var(--section, var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+.doc-prose ul, .doc-prose ol { padding-left: 1.4rem; }
+.doc-prose ul { list-style: disc; }
+.doc-prose ol { list-style: decimal; }
+.doc-prose li { margin-top: 0.3rem; }
+.doc-prose img { max-width: 100%; height: auto; border-radius: 6px; }
+.doc-prose table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.doc-prose td, .doc-prose th {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+.doc-prose th { background: var(--muted); font-weight: 600; }

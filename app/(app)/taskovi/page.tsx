@@ -19,7 +19,7 @@ export default async function TaskoviPage() {
 
   return (
     <>
-      <PageHeader title="Taskovi" />
+      <PageHeader section="taskovi" title="Taskovi" />
       <div className="flex-1 overflow-y-auto p-6">
         <div className="grid gap-4 md:grid-cols-3">
           {COLS.map((col) => {

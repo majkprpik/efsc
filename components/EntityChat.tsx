@@ -110,10 +110,12 @@ export function EntityChat({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b px-4 py-3">
-        <Sparkles className="size-4 text-primary" />
+      <div className="chat-header flex items-center gap-2.5 border-b px-4 py-3">
+        <span className="chat-mark flex size-7 shrink-0 items-center justify-center rounded-md">
+          <Sparkles className="size-4" />
+        </span>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium">AI asistent</div>
+          <div className="truncate text-sm font-semibold">AI asistent</div>
           <div className="truncate text-xs text-muted-foreground">{title}</div>
         </div>
       </div>
@@ -131,7 +133,7 @@ export function EntityChat({
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="rounded-md border px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                  className="chat-suggestion rounded-md border px-3 py-2 text-left text-sm transition"
                 >
                   {s}
                 </button>
@@ -144,8 +146,8 @@ export function EntityChat({
               <div
                 className={
                   m.role === "user"
-                    ? "max-w-[85%] rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground"
-                    : "max-w-[85%] whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 text-sm"
+                    ? "chat-bubble-user max-w-[85%] rounded-lg px-3 py-2 text-sm"
+                    : "chat-bubble-ai max-w-[85%] whitespace-pre-wrap rounded-lg border px-3 py-2 text-sm"
                 }
               >
                 {m.content || (busy ? "…" : "")}
@@ -156,13 +158,19 @@ export function EntityChat({
       </div>
 
       <form
-        className="flex gap-2 border-t p-3"
+        className="chat-composer flex gap-2 border-t p-3"
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
       >
-        <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Pitaj AI…" disabled={busy} />
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Pitaj AI…"
+          disabled={busy}
+          className="bg-card"
+        />
         <Button type="submit" size="icon" disabled={busy || !input.trim()}>
           <Send className="size-4" />
         </Button>
@@ -181,14 +189,10 @@ export function EntityChatPanel(props: {
   entityId: string | null;
   title: string;
 }) {
+  // One header is enough — EntityChat already names itself and the entity.
   return (
-    <div className="hidden w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
-      <div className="flex items-center gap-2 border-b px-3 py-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Razgovor</span>
-      </div>
-      <div className="min-h-0 flex-1">
-        <EntityChat {...props} />
-      </div>
+    <div className="chat-panel hidden w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
+      <EntityChat {...props} />
     </div>
   );
 }

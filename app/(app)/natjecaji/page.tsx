@@ -29,7 +29,7 @@ export default async function NatjecajiPage() {
 
   return (
     <>
-      <PageHeader title="Natječaji" />
+      <PageHeader section="natjecaji" title="Natječaji" />
       <NatjecajiView natjecaji={natjecaji ?? []} projects={projects} docs={docs ?? []} />
     </>
   );

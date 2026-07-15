@@ -20,7 +20,7 @@ export default async function RokoviPage() {
 
   return (
     <>
-      <PageHeader title="Rokovi" />
+      <PageHeader section="rokovi" title="Rokovi" />
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-3xl">
           {/* today banner */}

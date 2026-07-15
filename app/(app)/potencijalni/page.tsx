@@ -31,7 +31,7 @@ export default async function PotencijalniPage({
 
   return (
     <>
-      <PageHeader title="Potencijalni klijenti" />
+      <PageHeader section="potencijalni" title="Potencijalni klijenti" />
       <PotencijalniView pot={pot} notes={notes} initialId={sp.id} />
     </>
   );

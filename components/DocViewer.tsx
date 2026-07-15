@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FileText, Download, Loader2 } from "lucide-react";
-import { getSignedUrl } from "@/app/(app)/doc-actions";
+import { getSignedUrl, getDocPreview, type DocPreview } from "@/app/(app)/doc-actions";
 import { Button } from "@/components/ui/button";
 
 type Kind = "pdf" | "docx" | "xlsx" | "image" | "text" | "other";
@@ -21,12 +21,14 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [textContent, setTextContent] = useState<string | null>(null);
+  const [preview, setPreview] = useState<DocPreview | null>(null);
   const kind = kindOf(fileName);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setTextContent(null);
+    setPreview(null);
     getSignedUrl(storagePath).then(async (u) => {
       if (!active) return;
       setUrl(u);
@@ -46,6 +48,18 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
       active = false;
     };
   }, [storagePath, kind]);
+
+  // docx/xlsx have no native browser preview, so the server renders them.
+  useEffect(() => {
+    if (kind !== "docx" && kind !== "xlsx") return;
+    let active = true;
+    getDocPreview(storagePath, fileName).then((p) => {
+      if (active) setPreview(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, [storagePath, fileName, kind]);
 
   if (loading) {
     return (
@@ -86,12 +100,67 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
     );
   }
 
-  // docx / xlsx / other → no native preview; offer download + note
+  if (kind === "docx" || kind === "xlsx") {
+    if (!preview) {
+      return (
+        <div className="flex h-full items-center justify-center text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
+      );
+    }
+
+    if (preview.kind === "html") {
+      return (
+        <div className="h-full overflow-auto bg-muted/20 p-6">
+          <div
+            className="doc-prose mx-auto max-w-2xl rounded-lg bg-card p-8 shadow-sm"
+            dangerouslySetInnerHTML={{ __html: preview.html }}
+          />
+        </div>
+      );
+    }
+
+    if (preview.kind === "sheets") {
+      return (
+        <div className="h-full overflow-auto bg-muted/20 p-4">
+          {preview.sheets.map((s) => (
+            <div key={s.name} className="mb-6">
+              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {s.name}
+              </div>
+              <div className="overflow-x-auto rounded-lg border bg-card">
+                <table className="w-full border-collapse text-xs">
+                  <tbody>
+                    {s.rows.map((row, ri) => (
+                      <tr key={ri} className={ri === 0 ? "bg-muted/50 font-medium" : ""}>
+                        {row.map((cell, ci) => (
+                          <td
+                            key={ci}
+                            className="border-b border-r px-2.5 py-1.5 last:border-r-0"
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  }
+
+  // Anything else (or a preview that failed) → download
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
       <FileText className="size-12 text-muted-foreground/40" />
       <div className="text-sm text-muted-foreground">
-        Za ovaj tip dokumenta nema pregleda u browseru.
+        {preview?.kind === "error"
+          ? `Pregled nije uspio: ${preview.message}`
+          : "Za ovaj tip dokumenta nema pregleda u browseru."}
         <br />
         Sadržaj možeš ispitati kroz AI chat desno ili preuzeti datoteku.
       </div>
