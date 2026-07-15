@@ -12,6 +12,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      document_text: {
+        Row: {
+          char_count: number
+          content: string
+          doc_id: string
+          doc_kind: string
+          extracted_at: string
+          id: string
+        }
+        Insert: {
+          char_count?: number
+          content?: string
+          doc_id: string
+          doc_kind: string
+          extracted_at?: string
+          id?: string
+        }
+        Update: {
+          char_count?: number
+          content?: string
+          doc_id?: string
+          doc_kind?: string
+          extracted_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       client_notes: {
         Row: {
           author: string
