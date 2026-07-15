@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireTeam } from "@/lib/auth-guard";
 import { getOpenAI, CHAT_MODEL } from "@/lib/openai";
 import { docKindFromName, extractText } from "@/lib/extract";
 import type { ChatCompletionMessageParam } from "openai/resources/index";
@@ -25,10 +26,10 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
+  // Interni chat o dokumentima — klijenti s portala nemaju pristup.
+  if (!(await requireTeam())) {
+    return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
+  }
 
   const body = (await req.json()) as Body;
   const { docKind, docId, storagePath, fileName, messages } = body;

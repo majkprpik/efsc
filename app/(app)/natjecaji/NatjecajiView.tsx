@@ -74,9 +74,9 @@ export function NatjecajiView({
     <div className="grid min-h-0 flex-1 grid-cols-[280px_1fr] overflow-hidden">
       {/* LIST */}
       <div className="flex min-h-0 flex-col overflow-y-auto border-r">
-        <div className="flex flex-wrap gap-1.5 border-b p-3">
+        <div data-tour="nat-filters" className="flex flex-wrap gap-1.5 border-b p-3">
           {FILTERS.map((f) => (
-            <button key={f.key} onClick={() => setFilter(f.key)}>
+            <button key={f.key} data-tour={`nat-filter-${f.key}`} onClick={() => setFilter(f.key)}>
               <Badge variant={filter === f.key ? "default" : "outline"} className="cursor-pointer">
                 {f.label}
               </Badge>
@@ -84,9 +84,10 @@ export function NatjecajiView({
           ))}
         </div>
         {filtered.length ? (
-          filtered.map((n) => (
+          filtered.map((n, i) => (
             <button
               key={n.id}
+              data-tour={`nat-row-${i}`}
               onClick={() => setSelectedId(n.id)}
               className={cn(
                 "flex items-center gap-3 border-b px-4 py-3 text-left hover:bg-muted/50",
@@ -120,7 +121,7 @@ export function NatjecajiView({
               </div>
               <div className="flex-1">
                 <div className="text-2xl font-semibold leading-tight tracking-tight">{selected.naziv}</div>
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div data-tour="nat-meta" className="mt-1 text-sm text-muted-foreground">
                   {[
                     selected.tijelo,
                     selected.iznos,
@@ -133,7 +134,7 @@ export function NatjecajiView({
               <StatusBadge status={selected.status} />
             </div>
 
-            <div className="mb-5 grid grid-cols-3 gap-3">
+            <div data-tour="nat-info" className="mb-5 grid grid-cols-3 gap-3">
               <Info label="Rok prijave" value={shortDate(selected.rok)} accent={selected.status === "aktivan"} />
               <Info label="Klijenata" value={String(clientCount(selected.id))} />
               <Info label="Projekata" value={String(selectedProjects.length)} />

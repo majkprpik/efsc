@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireTeam } from "@/lib/auth-guard";
 import { getOpenAI, CHAT_MODEL } from "@/lib/openai";
 import {
   buildEntityContext,
@@ -32,8 +33,10 @@ function validate(kind: unknown, id: unknown): string | null {
 /** Load stored history for an entity (shared per item). */
 export async function GET(req: Request) {
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
-  if (!claims?.claims) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
+  // Interni chat — klijenti s portala nemaju pristup.
+  if (!(await requireTeam())) {
+    return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
+  }
 
   const url = new URL(req.url);
   const entityKind = url.searchParams.get("entityKind");
@@ -60,8 +63,8 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const claims = claimsData?.claims;
+  // Interni chat — klijenti s portala nemaju pristup.
+  const claims = await requireTeam();
   if (!claims) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
 
   const { entityKind, entityId, message } = (await req.json()) as Body;

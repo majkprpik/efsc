@@ -35,17 +35,46 @@ export async function updateSession(request: NextRequest) {
   const user = claims?.claims;
 
   const { pathname } = request.nextUrl;
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/auth");
+
+  // Točno /portal i /portal/*, ali NE /portal-admin — to je timska stranica.
+  const isPortal = pathname === "/portal" || pathname.startsWith("/portal/");
+
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/portal/login");
 
   if (!user && !isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = isPortal ? "/portal/login" : "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && pathname === "/login") {
+  // Klijenti vide samo portal; tim vidi samo Orbit. Rola je u app_metadata jer
+  // je ona dio potpisanog JWT-a — čitanje iz profiles tablice ovdje bi značilo
+  // upit na bazu na svaki request, što je upravo ono što getClaims() izbjegava.
+  const role = (user?.app_metadata as { role?: string } | undefined)?.role;
+  const isClient = role === "client";
+
+  // API rute se ne preusmjeravaju — one same provjere tko zove i vrate JSON.
+  // Redirect bi im vratio HTML login stranicu sa statusom 200.
+  const isApi = pathname.startsWith("/api/");
+
+  if (user && isClient && !isPortal && !isApi) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/portal";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && !isClient && isPortal) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && (pathname === "/login" || pathname === "/portal/login")) {
+    const url = request.nextUrl.clone();
+    url.pathname = isClient ? "/portal" : "/";
     return NextResponse.redirect(url);
   }
 

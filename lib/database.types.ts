@@ -297,8 +297,75 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_requests: {
+        Row: {
+          ai_note: string | null
+          ai_status: string | null
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          original_name: string | null
+          project_id: string | null
+          required: boolean
+          sort: number
+          storage_path: string | null
+          uploaded: boolean
+          uploaded_at: string | null
+        }
+        Insert: {
+          ai_note?: string | null
+          ai_status?: string | null
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          original_name?: string | null
+          project_id?: string | null
+          required?: boolean
+          sort?: number
+          storage_path?: string | null
+          uploaded?: boolean
+          uploaded_at?: string | null
+        }
+        Update: {
+          ai_note?: string | null
+          ai_status?: string | null
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          original_name?: string | null
+          project_id?: string | null
+          required?: boolean
+          sort?: number
+          storage_path?: string | null
+          uploaded?: boolean
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          client_id: string | null
           created_at: string
           email: string
           id: string
@@ -307,6 +374,7 @@ export type Database = {
           role: string
         }
         Insert: {
+          client_id?: string | null
           created_at?: string
           email?: string
           id: string
@@ -315,6 +383,7 @@ export type Database = {
           role?: string
         }
         Update: {
+          client_id?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -322,7 +391,15 @@ export type Database = {
           name?: string
           role?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_docs: {
         Row: {
