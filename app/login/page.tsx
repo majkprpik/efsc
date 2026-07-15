@@ -39,12 +39,18 @@ export default async function LoginPage({
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="email">E-mail</Label>
-              <Input id="email" name="email" type="email" placeholder="ana@esfc.hr" required />
+              {/* DEMO: predpopunjeno za test — ukloniti defaultValue za produkciju */}
+              <Input id="email" name="email" type="email" placeholder="ana@esfc.hr" defaultValue="ana@esfc.hr" required />
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="password">Lozinka</Label>
-              <Input id="password" name="password" type="password" placeholder="••••••••" required />
+              {/* DEMO: predpopunjeno za test — ukloniti defaultValue za produkciju */}
+              <Input id="password" name="password" type="password" placeholder="••••••••" defaultValue="orbit1234" required />
             </div>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Demo pristup je predpopunjen — samo klikni Prijava.
+            </p>
 
             <Button formAction={login} className="mt-1 w-full">
               Prijava
