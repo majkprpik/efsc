@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { PriorityBadge } from "@/components/shared";
@@ -129,6 +130,9 @@ export function TaskBoard({
   return (
     <>
       <DndContext
+        // Without a fixed id, dnd-kit numbers its a11y ids per instance and the
+        // server and client disagree — a hydration mismatch on every load.
+        id="task-board"
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={onDragStart}
@@ -238,13 +242,20 @@ function CardBody({ task, dragging }: { task: BoardTask; dragging?: boolean }) {
   return (
     <div
       className={cn(
-        "rounded-md border bg-background p-3",
+        "group relative rounded-md border bg-background p-3",
         dragging ? "cursor-grabbing shadow-lg" : "hover:border-muted-foreground/40",
       )}
     >
+      {/* Nothing else signals the card is draggable until you grab it. */}
+      <GripVertical
+        className={cn(
+          "absolute right-2 top-2.5 size-3.5 text-muted-foreground/40 transition-opacity",
+          dragging ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+        )}
+      />
       <div
         className={cn(
-          "text-sm font-medium",
+          "pr-5 text-sm font-medium",
           task.status === "done" && "text-muted-foreground line-through",
         )}
       >
