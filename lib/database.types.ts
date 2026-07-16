@@ -256,7 +256,15 @@ export type Database = {
           natjecaj_id?: string
           storage_path?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "natjecaj_docs_natjecaj_id_fkey"
+            columns: ["natjecaj_id"]
+            isOneToOne: false
+            referencedRelation: "natjecaji"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       natjecaji: {
         Row: {
@@ -438,7 +446,15 @@ export type Database = {
           uploaded?: boolean
           uploaded_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "project_docs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
@@ -506,6 +522,7 @@ export type Database = {
           id: string
           priority: Database["public"]["Enums"]["task_priority"]
           project_id: string | null
+          sort: number
           status: Database["public"]["Enums"]["task_status"]
           title: string
         }
@@ -517,6 +534,7 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id?: string | null
+          sort?: number
           status?: Database["public"]["Enums"]["task_status"]
           title: string
         }
@@ -528,6 +546,7 @@ export type Database = {
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id?: string | null
+          sort?: number
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
         }

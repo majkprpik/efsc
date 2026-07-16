@@ -3,8 +3,10 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export function ThemeToggle() {
+  const t = useT();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -53,8 +55,10 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      title={isDark ? "Svijetla tema" : "Tamna tema"}
-      className="flex size-8 items-center justify-center rounded-md border text-muted-foreground transition hover:bg-accent hover:text-foreground"
+      title={isDark ? t.nav.svijetlaTema : t.nav.tamnaTema}
+      // Borderless, matching the sign-out button: the bordered pills beside it
+      // (tour, HR|EN) are wide, so a bordered square read as a squashed pill.
+      className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
     >
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </button>

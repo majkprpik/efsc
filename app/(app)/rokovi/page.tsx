@@ -34,7 +34,7 @@ export default async function RokoviPage() {
             </div>
           </div>
 
-          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Svi rokovi</div>
+          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t.rokovi.svi}</div>
           <Card data-tour="rok-list">
             <CardContent className="p-0">
               {rokovi?.length ? (
@@ -54,8 +54,8 @@ export default async function RokoviPage() {
                       <span className="text-xs text-muted-foreground">
                         {days === null ? "" : days < 0 ? t.rokovi.proslo : t.rokovi.zaDana.replace("{n}", String(days))}
                       </span>
-                      {urg === "urg" && <Badge className="border-transparent bg-red-500/15 text-red-700 dark:text-red-400">hitno</Badge>}
-                      {urg === "warn" && <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">uskoro</Badge>}
+                      {urg === "urg" && <Badge className="border-transparent bg-red-500/15 text-red-700 dark:text-red-400">{t.rokovi.hitno}</Badge>}
+                      {urg === "warn" && <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">{t.rokovi.uskoro}</Badge>}
                     </div>
                   );
                 })

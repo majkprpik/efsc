@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
+import { AddClientButton } from "@/components/EntityDialogs";
 import {
   KlijentiView,
   type Klijent,
@@ -82,7 +83,9 @@ export default async function KlijentiPage({
 
   return (
     <>
-      <PageHeader section="klijenti" title={t.nav.klijenti} />
+      <PageHeader section="klijenti" title={t.nav.klijenti}>
+        <AddClientButton />
+      </PageHeader>
       <KlijentiView
         clients={clients}
         projects={projects}

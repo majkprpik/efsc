@@ -47,7 +47,7 @@ export default async function FinancijePage() {
                       </div>
                     </div>
                     {f.status === "kasni" ? (
-                      <Badge className="border-transparent bg-red-500/15 text-red-700 dark:text-red-400">kasni</Badge>
+                      <Badge className="border-transparent bg-red-500/15 text-red-700 dark:text-red-400">{t.financije.kasni}</Badge>
                     ) : (
                       <Badge className="border-transparent bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">{f.status}</Badge>
                     )}
@@ -58,7 +58,7 @@ export default async function FinancijePage() {
                 );
               })
             ) : (
-              <Empty>Nema transakcija</Empty>
+              <Empty>{t.financije.nemaTransakcija}</Empty>
             )}
           </CardContent>
         </Card>

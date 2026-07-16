@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
+import { AddNatjecajButton } from "@/components/EntityDialogs";
 import { NatjecajiView, type ProjRow } from "./NatjecajiView";
 
 export default async function NatjecajiPage() {
@@ -31,7 +32,9 @@ export default async function NatjecajiPage() {
 
   return (
     <>
-      <PageHeader section="natjecaji" title={t.nav.natjecaji} />
+      <PageHeader section="natjecaji" title={t.nav.natjecaji}>
+        <AddNatjecajButton />
+      </PageHeader>
       <NatjecajiView natjecaji={natjecaji ?? []} projects={projects} docs={docs ?? []} />
     </>
   );

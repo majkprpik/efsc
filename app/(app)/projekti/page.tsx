@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
+import { AddProjectButton } from "@/components/EntityDialogs";
 import { ProjektiView, type Projekt, type ProjDoc, type ProjTask } from "./ProjektiView";
 
 export default async function ProjektiPage({
@@ -14,7 +15,13 @@ export default async function ProjektiPage({
 
   // Everything the master-detail needs, fetched once. Switching projects is
   // then pure client state — no request per click.
-  const [{ data: projRows }, { data: docRows }, { data: taskRows }] = await Promise.all([
+  const [
+    { data: projRows },
+    { data: docRows },
+    { data: taskRows },
+    { data: clientRows },
+    { data: natjecajRows },
+  ] = await Promise.all([
     supabase
       .from("projects")
       .select(
@@ -25,7 +32,9 @@ export default async function ProjektiPage({
       .from("project_docs")
       .select("id, project_id, name, uploaded, storage_path, note, uploaded_at")
       .order("sort"),
-    supabase.from("tasks").select("id, project_id, title, status, assignee_name, due").order("due"),
+    supabase.from("tasks").select("id, project_id, title, status, assignee_name, due").order("sort"),
+    supabase.from("clients").select("id, naziv").order("naziv"),
+    supabase.from("natjecaji").select("id, naziv").order("naziv"),
   ]);
 
   const projects: Projekt[] = (projRows ?? []).map((p) => ({
@@ -43,7 +52,9 @@ export default async function ProjektiPage({
 
   return (
     <>
-      <PageHeader section="projekti" title={t.nav.projekti} />
+      <PageHeader section="projekti" title={t.nav.projekti}>
+        <AddProjectButton clients={clientRows ?? []} natjecaji={natjecajRows ?? []} />
+      </PageHeader>
       <ProjektiView
         projects={projects}
         docs={(docRows ?? []) as ProjDoc[]}

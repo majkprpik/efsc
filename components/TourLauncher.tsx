@@ -23,11 +23,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TOUR_ENDED, TOURS, findTour, tourUrl } from "@/lib/demo-scenarios/registry";
+import { useT } from "@/lib/i18n/client";
 
 export function TourLauncher() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const t = useT();
   const scenario = params.get("scenario");
   const url = params.toString();
   const inTourUrl = params.get("demo") === "1" && !!scenario;
@@ -58,11 +60,11 @@ export function TourLauncher() {
     return (
       <button
         onClick={stop}
-        title="Zaustavi tutorial"
-        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+        title={t.nav.zaustaviTutorial}
+        className="flex h-8 items-center gap-1.5 rounded-md border px-2 text-xs text-muted-foreground transition hover:bg-accent hover:text-foreground"
       >
         <Square className="size-4 shrink-0 fill-current" />
-        <span>Zaustavi tutorial</span>
+        <span className="hidden lg:inline">{t.nav.zaustaviTutorial}</span>
       </button>
     );
   }
@@ -72,16 +74,16 @@ export function TourLauncher() {
       <DropdownMenuTrigger
         render={
           <button
-            title="Pokreni tutorial"
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition hover:bg-accent hover:text-foreground"
+            title={t.nav.pokreniTutorial}
+            className="flex h-8 items-center gap-1.5 rounded-md border px-2 text-xs text-muted-foreground transition hover:bg-accent hover:text-foreground"
           >
             <PlayCircle className="size-4 shrink-0" />
-            <span className="flex-1 text-left">Pokreni tutorial</span>
+            <span className="hidden lg:inline">{t.nav.pokreniTutorial}</span>
             <ChevronRight className="size-3.5 opacity-50" />
           </button>
         }
       />
-      <DropdownMenuContent side="top" align="start" className="w-64">
+      <DropdownMenuContent side="bottom" align="end" className="w-64">
         {/* Every DropdownMenuLabel is a Base UI Menu.GroupLabel and throws
             unless it sits inside a Menu.Group — a plain wrapper is not enough. */}
         {TOURS.map((tour) => (

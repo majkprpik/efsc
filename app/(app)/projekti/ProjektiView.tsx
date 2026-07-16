@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { DocDialog } from "@/components/DocDialog";
 import { DocUploadButton, DocDropzone } from "@/components/DocUpload";
+import { AddTaskButton } from "@/components/AddTask";
+import { TaskCheckbox } from "@/components/TaskCheckbox";
 import { shortDate } from "@/lib/ui";
 import { useT, useLocale } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
@@ -208,45 +210,41 @@ export function ProjektiView({
             </Card>
 
             {/* TASKS */}
-            {selectedTasks.length > 0 && (
-              <>
-                <div className="mb-2 mt-6 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t.projekti.taskovi}
-                </div>
-                <Card>
-                  <CardContent className="p-0">
-                    {selectedTasks.map((t, i) => (
-                      <div
-                        key={t.id}
-                        className={cn("flex items-center gap-3 px-4 py-2.5", i > 0 && "border-t")}
-                      >
+            <div className="mb-2 mt-6 flex items-center justify-between gap-3">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t.projekti.taskovi}
+              </div>
+              <AddTaskButton projectId={selected.id} />
+            </div>
+            <Card>
+              <CardContent className="p-0">
+                {selectedTasks.length ? (
+                  selectedTasks.map((task, i) => (
+                    <div
+                      key={task.id}
+                      className={cn("flex items-center gap-3 px-4 py-2.5", i > 0 && "border-t")}
+                    >
+                      <TaskCheckbox taskId={task.id} status={task.status} />
+                      <div className="min-w-0 flex-1">
                         <div
                           className={cn(
-                            "size-4 shrink-0 rounded-sm border",
-                            t.status === "done"
-                              ? "border-emerald-600 bg-emerald-600"
-                              : "border-muted-foreground/40",
+                            "truncate text-sm",
+                            task.status === "done" && "text-muted-foreground line-through",
                           )}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div
-                            className={cn(
-                              "truncate text-sm",
-                              t.status === "done" && "text-muted-foreground line-through",
-                            )}
-                          >
-                            {t.title}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {t.assignee_name ?? "—"} · {shortDate(t.due)}
-                          </div>
+                        >
+                          {task.title}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {task.assignee_name ?? "—"} · {shortDate(task.due)}
                         </div>
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </>
-            )}
+                    </div>
+                  ))
+                ) : (
+                  <Empty>{t.taskovi.prazno}</Empty>
+                )}
+              </CardContent>
+            </Card>
           </div>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">

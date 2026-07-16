@@ -87,7 +87,7 @@ export function KlijentiView({
         <div className="flex min-h-0 flex-col overflow-y-auto border-r">
           <div data-tour="klijent-tags" className="flex flex-wrap gap-1.5 border-b p-3">
             <button data-tour="klijent-tag-svi" onClick={() => setTag(null)}>
-              <Badge variant={!tag ? "default" : "outline"} className="cursor-pointer">svi</Badge>
+              <Badge variant={!tag ? "default" : "outline"} className="cursor-pointer">{t.common.svi}</Badge>
             </button>
             {allTags.map((t, i) => (
               <button key={t} data-tour={`klijent-tag-${i}`} onClick={() => setTag(t)}>
@@ -119,7 +119,7 @@ export function KlijentiView({
                     <span className="block truncate text-xs text-muted-foreground">{c.contact ?? "—"}</span>
                   </span>
                   {c.status === "inactive" && (
-                    <Badge variant="outline" className="text-muted-foreground">neaktivan</Badge>
+                    <Badge variant="outline" className="text-muted-foreground">{t.statusi.inactive}</Badge>
                   )}
                 </button>
               );
@@ -178,7 +178,7 @@ export function KlijentiView({
                     </Link>
                   ))
                 ) : (
-                  <Empty>Nema projekata</Empty>
+                  <Empty>{t.projekti.prazno}</Empty>
                 )}
               </Section>
 

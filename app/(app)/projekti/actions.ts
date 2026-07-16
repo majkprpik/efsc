@@ -32,15 +32,30 @@ export async function uploadDocument(formData: FormData) {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  if (docId) {
-    await supabase
+  // Storage upserts by path, so re-uploading the same filename must reuse the
+  // existing row — otherwise two rows would point at one file and deleting
+  // either would break the other.
+  const targetId =
+    docId ||
+    (
+      await supabase
+        .from("project_docs")
+        .select("id")
+        .eq("project_id", projectId)
+        .eq("storage_path", path)
+        .maybeSingle()
+    ).data?.id;
+
+  if (targetId) {
+    const { error } = await supabase
       .from("project_docs")
       .update({ uploaded: true, storage_path: path, uploaded_at: today, note: null })
-      .eq("id", docId);
+      .eq("id", targetId);
+    if (error) return { error: `Spremanje nije uspjelo: ${error.message}` };
     // invalidate cached extracted text
-    await supabase.from("document_text").delete().eq("doc_kind", "project").eq("doc_id", docId);
+    await supabase.from("document_text").delete().eq("doc_kind", "project").eq("doc_id", targetId);
   } else {
-    await supabase.from("project_docs").insert({
+    const { error } = await supabase.from("project_docs").insert({
       project_id: projectId,
       name: file.name,
       uploaded: true,
@@ -48,6 +63,7 @@ export async function uploadDocument(formData: FormData) {
       uploaded_at: today,
       sort: 999,
     });
+    if (error) return { error: `Spremanje nije uspjelo: ${error.message}` };
   }
 
   revalidatePath("/projekti");

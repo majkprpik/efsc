@@ -9,6 +9,7 @@ import { cp, ini, shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { Sparkles, Phone } from "lucide-react";
 import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
+import { AddNoteForm } from "@/components/AddNote";
 
 export type Potencijalni = {
   id: string;
@@ -80,7 +81,7 @@ export function PotencijalniView({
               );
             })
           ) : (
-            <Empty>Nema potencijalnih</Empty>
+            <Empty>{t.potencijalni.prazno}</Empty>
           )}
         </div>
 
@@ -104,7 +105,7 @@ export function PotencijalniView({
                     )}
                   </div>
                 </div>
-                <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">potencijalni</Badge>
+                <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">{t.statusi.potencijalni}</Badge>
               </div>
 
               <div data-tour="pot-info" className="mb-5 grid grid-cols-2 gap-3">
@@ -154,6 +155,7 @@ export function PotencijalniView({
                   ) : (
                     <Empty>{t.potencijalni.nemaBiljeski}</Empty>
                   )}
+                  <AddNoteForm clientId={selected.id} />
                 </CardContent>
               </Card>
               </div>

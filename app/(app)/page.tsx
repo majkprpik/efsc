@@ -66,7 +66,7 @@ export default async function DashboardPage() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader className="flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm">Moji taskovi</CardTitle>
+                <CardTitle className="text-sm">{dict.taskovi.moji}</CardTitle>
                 <Link href="/taskovi" className="text-xs text-muted-foreground hover:text-foreground">
                   svi →
                 </Link>
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
 
             <Card>
               <CardHeader className="flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm">Aktivni projekti</CardTitle>
+                <CardTitle className="text-sm">{dict.projekti.aktivni}</CardTitle>
                 <Link href="/projekti" className="text-xs text-muted-foreground hover:text-foreground">
                   svi →
                 </Link>
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
                     </Link>
                   ))
                 ) : (
-                  <Empty>Nema projekata</Empty>
+                  <Empty>{dict.projekti.prazno}</Empty>
                 )}
               </CardContent>
             </Card>
@@ -150,14 +150,14 @@ export default async function DashboardPage() {
                     );
                   })
                 ) : (
-                  <Empty>Nema rokova</Empty>
+                  <Empty>{dict.rokovi.prazno}</Empty>
                 )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm">Potencijalni — follow-up</CardTitle>
+                <CardTitle className="text-sm">{dict.potencijalni.followUp}</CardTitle>
                 <Link href="/potencijalni" className="text-xs text-muted-foreground hover:text-foreground">
                   svi →
                 </Link>
@@ -179,7 +179,7 @@ export default async function DashboardPage() {
                     </Link>
                   ))
                 ) : (
-                  <Empty>Nema potencijalnih</Empty>
+                  <Empty>{dict.potencijalni.prazno}</Empty>
                 )}
               </CardContent>
             </Card>
