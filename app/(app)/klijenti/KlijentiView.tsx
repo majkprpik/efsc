@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useT, useLocale } from "@/lib/i18n/client";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { cp, ini, shortDate, eur } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { Folder, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
 
 export type Klijent = {
@@ -58,6 +59,8 @@ export function KlijentiView({
   finances: KlijentFinancija[];
   initialId?: string;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [tag, setTag] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | undefined>(initialId ?? clients[0]?.id);
 
@@ -121,7 +124,7 @@ export function KlijentiView({
               );
             })
           ) : (
-            <Empty>Nema klijenata</Empty>
+            <Empty>{t.klijenti.prazno}</Empty>
           )}
         </div>
 
@@ -161,14 +164,7 @@ export function KlijentiView({
                 </div>
               )}
 
-              {selected.folder_path && (
-                <div className="mb-5 flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-2.5 text-sm">
-                  <Folder className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{selected.folder_path}</span>
-                </div>
-              )}
-
-              <Section title="Projekti">
+              <Section title={t.klijenti.projektiSekcija}>
                 {selProjects.length ? (
                   selProjects.map((p, i) => (
                     <Link key={p.id} href={`/projekti?id=${p.id}`} className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50", i > 0 && "border-t")}>
@@ -177,7 +173,7 @@ export function KlijentiView({
                         <div className="truncate text-sm">{p.naziv}</div>
                         <div className="text-xs text-muted-foreground">Rok: {shortDate(p.rok)}</div>
                       </div>
-                      <StatusBadge status={p.status} />
+                      <StatusBadge status={p.status} locale={locale} />
                     </Link>
                   ))
                 ) : (
@@ -186,14 +182,14 @@ export function KlijentiView({
               </Section>
 
               {selNatjecaji.length > 0 && (
-                <Section title="Natječaji">
+                <Section title={t.klijenti.natjecajiSekcija}>
                   {selNatjecaji.map((n, i) => (
                     <Link key={n.id} href={`/natjecaji?id=${n.id}`} className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50", i > 0 && "border-t")}>
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm">{n.naziv}</div>
                         <div className="text-xs text-muted-foreground">Rok: {shortDate(n.rok)}</div>
                       </div>
-                      <StatusBadge status={n.status} />
+                      <StatusBadge status={n.status} locale={locale} />
                     </Link>
                   ))}
                 </Section>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useT, useLocale } from "@/lib/i18n/client";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { Trophy, Folder, FileText, File } from "lucide-react";
+import { Trophy, File } from "lucide-react";
 import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
 
 export type Natjecaj = {
@@ -49,6 +50,8 @@ export function NatjecajiView({
   projects: ProjRow[];
   docs: NatDoc[];
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [filter, setFilter] = useState<string>("svi");
   const [selectedId, setSelectedId] = useState<string | undefined>(natjecaji[0]?.id);
 
@@ -100,14 +103,14 @@ export function NatjecajiView({
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{n.naziv}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {clientCount(n.id)} kl. · {shortDate(n.rok)}
+                  {clientCount(n.id)} {t.natjecaji.kratica.klijenata} · {shortDate(n.rok)}
                 </span>
               </span>
-              <StatusBadge status={n.status} />
+              <StatusBadge status={n.status} locale={locale} />
             </button>
           ))
         ) : (
-          <Empty>Nema natječaja</Empty>
+          <Empty>{t.natjecaji.prazno}</Empty>
         )}
       </div>
 
@@ -125,26 +128,23 @@ export function NatjecajiView({
                   {[
                     selected.tijelo,
                     selected.iznos,
-                    selected.sufinanciranje && `${selected.sufinanciranje} sufinanciranje`,
+                    selected.sufinanciranje && `${selected.sufinanciranje} ${t.natjecaji.sufinanciranje}`,
                   ]
                     .filter(Boolean)
                     .join(" · ")}
                 </div>
               </div>
-              <StatusBadge status={selected.status} />
+              <StatusBadge status={selected.status} locale={locale} />
             </div>
 
             <div data-tour="nat-info" className="mb-5 grid grid-cols-3 gap-3">
-              <Info label="Rok prijave" value={shortDate(selected.rok)} accent={selected.status === "aktivan"} />
-              <Info label="Klijenata" value={String(clientCount(selected.id))} />
-              <Info label="Projekata" value={String(selectedProjects.length)} />
+              <Info label={t.natjecaji.rokPrijave} value={shortDate(selected.rok)} accent={selected.status === "aktivan"} />
+              <Info label={t.natjecaji.klijenata} value={String(clientCount(selected.id))} />
+              <Info label={t.natjecaji.projekata} value={String(selectedProjects.length)} />
             </div>
 
-            <FolderBar path={selected.folder_path} label="otvori" icon={Folder} />
-            <FolderBar path={selected.nat_folder_path} label="dokumentacija" icon={FileText} />
-
             <div className="mb-2 mt-6 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Dokumenti natječaja
+              {t.natjecaji.dokumentiNatjecaja}
             </div>
             <Card>
               <CardContent className="p-0">
@@ -159,7 +159,7 @@ export function NatjecajiView({
                     </div>
                   ))
                 ) : (
-                  <Empty>Nema dokumenata</Empty>
+                  <Empty>{t.projekti.nemaDokumenata}</Empty>
                 )}
               </CardContent>
             </Card>
@@ -167,7 +167,7 @@ export function NatjecajiView({
             {selectedProjects.length > 0 && (
               <>
                 <div className="mb-2 mt-6 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Projekti pod natječajem
+                  {t.projekti.podNatjecajem}
                 </div>
                 <Card>
                   <CardContent className="p-0">
@@ -182,7 +182,7 @@ export function NatjecajiView({
                           <div className="truncate text-sm">{p.naziv}</div>
                           <div className="truncate text-xs text-muted-foreground">{p.clientNaziv ?? "—"}</div>
                         </div>
-                        <StatusBadge status={p.status} />
+                        <StatusBadge status={p.status} locale={locale} />
                       </Link>
                     ))}
                   </CardContent>
@@ -193,7 +193,7 @@ export function NatjecajiView({
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
             <Trophy className="size-10 opacity-20" />
-            Odaberi natječaj
+            {t.natjecaji.odaberi}
           </div>
         )}
       </div>
@@ -219,21 +219,3 @@ function Info({ label, value, accent }: { label: string; value: string; accent?:
   );
 }
 
-function FolderBar({
-  path,
-  label,
-  icon: Icon,
-}: {
-  path: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  if (!path) return null;
-  return (
-    <div className="mb-2 flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-2.5 text-sm">
-      <Icon className="size-4 shrink-0 text-muted-foreground" />
-      <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{path}</span>
-      <span className="text-xs text-primary">{label}</span>
-    </div>
-  );
-}
