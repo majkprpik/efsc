@@ -71,7 +71,10 @@ export function DocDialogHeader({
           {meta}
         </span>
       )}
-      <span className="ml-auto flex shrink-0 items-center">
+      {/* DialogContent's own close button is absolutely positioned at
+          top-2 right-2 and is size-7 — it covers the rightmost 36px, so the
+          header keeps that corner clear. */}
+      <span className="ml-auto flex shrink-0 items-center pr-10">
         <DownloadButton storagePath={storagePath} fileName={fileName} />
       </span>
     </div>
