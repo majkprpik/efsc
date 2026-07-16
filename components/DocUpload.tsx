@@ -4,30 +4,47 @@ import { useRef, useState, useTransition } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadDocument } from "@/app/(app)/projekti/actions";
+import { uploadNatjecajDocument } from "@/app/(app)/natjecaji/actions";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/client";
 
-/** Upload button for a single checklist row (docId) or a new doc (projectId only). */
+export type DocKind = "project" | "natjecaj";
+
+/** Routes the upload to the right action + owner field for the given kind. */
+function submit(kind: DocKind, ownerId: string, docId: string | undefined, file: File) {
+  const fd = new FormData();
+  fd.set("file", file);
+  if (docId) fd.set("docId", docId);
+  if (kind === "natjecaj") {
+    fd.set("natjecajId", ownerId);
+    return uploadNatjecajDocument(fd);
+  }
+  fd.set("projectId", ownerId);
+  return uploadDocument(fd);
+}
+
+/** Upload button for a single checklist row (docId) or a new doc (owner only). */
 export function DocUploadButton({
+  docKind = "project",
   projectId,
+  natjecajId,
   docId,
   label,
 }: {
-  projectId: string;
+  docKind?: DocKind;
+  projectId?: string;
+  natjecajId?: string;
   docId?: string;
   label?: string;
 }) {
   const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, start] = useTransition();
+  const ownerId = (docKind === "natjecaj" ? natjecajId : projectId) ?? "";
 
   function onFile(file: File) {
-    const fd = new FormData();
-    fd.set("projectId", projectId);
-    if (docId) fd.set("docId", docId);
-    fd.set("file", file);
     start(async () => {
-      const res = await uploadDocument(fd);
+      const res = await submit(docKind, ownerId, docId, file);
       if (res?.error) toast.error(res.error);
       else toast.success(t.upload.uspjeh);
     });
@@ -58,19 +75,25 @@ export function DocUploadButton({
   );
 }
 
-/** Dropzone for adding new documents to a project. */
-export function DocDropzone({ projectId }: { projectId: string }) {
+/** Dropzone for adding new documents to a project or a tender. */
+export function DocDropzone({
+  docKind = "project",
+  projectId,
+  natjecajId,
+}: {
+  docKind?: DocKind;
+  projectId?: string;
+  natjecajId?: string;
+}) {
   const t = useT();
   const [drag, setDrag] = useState(false);
   const [pending, start] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+  const ownerId = (docKind === "natjecaj" ? natjecajId : projectId) ?? "";
 
   function upload(file: File) {
-    const fd = new FormData();
-    fd.set("projectId", projectId);
-    fd.set("file", file);
     start(async () => {
-      const res = await uploadDocument(fd);
+      const res = await submit(docKind, ownerId, undefined, file);
       if (res?.error) toast.error(res.error);
       else toast.success(`${file.name} ✓`);
     });
