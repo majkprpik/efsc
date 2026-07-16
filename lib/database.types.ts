@@ -45,6 +45,7 @@ export type Database = {
           created_by: string | null
           doc_id: string
           id: string
+          label: string | null
           source: string
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           created_by?: string | null
           doc_id: string
           id?: string
+          label?: string | null
           source?: string
         }
         Update: {
@@ -61,6 +63,7 @@ export type Database = {
           created_by?: string | null
           doc_id?: string
           id?: string
+          label?: string | null
           source?: string
         }
         Relationships: []

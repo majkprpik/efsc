@@ -72,6 +72,7 @@ export async function POST(req: Request) {
     `Dobivaš trenutni dokument, podatke o projektu i sadržaj klijentove dokumentacije. ` +
     `Primijeni korisnikovu uputu i vrati CIJELI izmijenjeni dokument. ` +
     `VAŽNO: vrati ISKLJUČIVO sadržaj dokumenta u Markdownu — bez uvoda, objašnjenja, komentara ni code-fence ograda. ` +
+    `Ne dodaji rečenice o sebi, o modelu, o datumu treniranja ni bilo kakav meta-tekst — samo sadržaj prijave. ` +
     `Ne izmišljaj podatke kojih nema u izvorima; ako nešto nedostaje, ostavi jasnu oznaku tipa "[dopuniti: ...]". ` +
     `Mijenjaj samo ono što uputa traži i zadrži ostatak dokumenta nepromijenjenim.\n\n` +
     `--- PODACI O PROJEKTU ---\n${entityContext}\n\n` +

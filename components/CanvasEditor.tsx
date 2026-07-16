@@ -2,12 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import { diffWords, type Change } from "diff";
-import { Sparkles, Loader2, Check, X, Eye, Pencil } from "lucide-react";
+import { Sparkles, Loader2, Check, X, Eye, Pencil, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/client";
 import { loadCanvas, saveCanvas } from "@/app/(app)/projekti/actions";
+import { DiffAnimator } from "@/components/DiffAnimator";
+import { VersionHistory } from "@/components/VersionHistory";
+
+/** Strip a leading/trailing ```markdown code fence the model sometimes wraps around output. */
+function stripFence(s: string): string {
+  const m = s.match(/^```[a-z]*\n([\s\S]*?)\n```$/i);
+  return m ? m[1] : s;
+}
 
 /** A run of changed text (a removed span, its added replacement, or both). */
 type Block = { id: number; removed: string; added: string };
@@ -54,7 +62,9 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
 
   // Diff-review state: the AI proposal, its blocks, and per-block decisions.
   const [proposal, setProposal] = useState<string | null>(null);
+  const [animating, setAnimating] = useState(false);
   const [decisions, setDecisions] = useState<Record<number, "accept" | "reject">>({});
+  const [showHistory, setShowHistory] = useState(false);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -112,7 +122,8 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
       }
       setInstruction("");
       setDecisions({});
-      setProposal(acc.trim());
+      setAnimating(true);
+      setProposal(stripFence(acc.trim()));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -131,6 +142,7 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
     }
     setContent(out);
     setProposal(null);
+    setAnimating(false);
     setDecisions({});
     await persist(out, "ai");
   }
@@ -149,6 +161,19 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
     const { unchanged, blocks } = toBlocks(parts);
     const allDecided = blocks.every((b) => decisions[b.block.id]);
 
+    // Play the delete/type animation once, then fall through to the static
+    // accept/reject review below. Nothing to animate → skip straight to review.
+    if (animating && blocks.length > 0) {
+      return (
+        <DiffAnimator
+          leading={unchanged}
+          blocks={blocks.map(({ block, after }) => ({ ...block, after }))}
+          skipLabel={t.canvas.preskoci}
+          onDone={() => setAnimating(false)}
+        />
+      );
+    }
+
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
@@ -157,7 +182,14 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
             {t.canvas.pregledIzmjena}
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setProposal(null)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setProposal(null);
+                setAnimating(false);
+              }}
+            >
               {t.canvas.odustani}
             </Button>
             <Button size="sm" disabled={!allDecided || saving} onClick={() => applyDecisions(parts)}>
@@ -235,7 +267,8 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
 
   // ---- Edit mode ----------------------------------------------------------
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-w-0">
+    <div className="flex h-full min-w-0 flex-1 flex-col">
       <div className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {saving ? (
@@ -246,10 +279,20 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
             t.canvas.spremljeno
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setPreview((p) => !p)}>
-          {preview ? <Pencil className="size-4" /> : <Eye className="size-4" />}
-          <span className="ml-1.5">{preview ? t.canvas.uredi : t.canvas.pregled}</span>
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant={showHistory ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setShowHistory((h) => !h)}
+          >
+            <History className="size-4" />
+            <span className="ml-1.5">{t.canvas.povijest}</span>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setPreview((p) => !p)}>
+            {preview ? <Pencil className="size-4" /> : <Eye className="size-4" />}
+            <span className="ml-1.5">{preview ? t.canvas.uredi : t.canvas.pregled}</span>
+          </Button>
+        </div>
       </div>
 
       {preview ? (
@@ -286,6 +329,15 @@ export function CanvasEditor({ projectId }: { projectId: string }) {
           <span className="ml-1.5">{t.canvas.aiIzmijeni}</span>
         </Button>
       </form>
+    </div>
+      {showHistory && (
+        <VersionHistory
+          projectId={projectId}
+          current={content}
+          onClose={() => setShowHistory(false)}
+          onRestored={(c) => setContent(c)}
+        />
+      )}
     </div>
   );
 }

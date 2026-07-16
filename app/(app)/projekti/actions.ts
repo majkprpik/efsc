@@ -139,6 +139,179 @@ export async function saveCanvas(projectId: string, content: string, source: "us
   return { ok: true };
 }
 
+export type VersionRow = {
+  id: string;
+  createdAt: string;
+  authorName: string | null;
+  source: string;
+  label: string | null;
+  isCurrent: boolean;
+};
+
+/**
+ * Version history for a project's document, newest first, with a synthetic
+ * "current" row on top representing the live content. Author names are resolved
+ * from profiles so the UI shows "Ana", not a UUID.
+ */
+export async function listVersions(projectId: string): Promise<{ versions: VersionRow[] }> {
+  const supabase = await createClient();
+  if (!projectId) return { versions: [] };
+
+  const { data: doc } = await supabase
+    .from("canvas_docs")
+    .select("id, updated_at, updated_by")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (!doc) return { versions: [] };
+
+  const { data: rows } = await supabase
+    .from("canvas_versions")
+    .select("id, created_at, created_by, source, label")
+    .eq("doc_id", doc.id)
+    .order("created_at", { ascending: false });
+
+  // Resolve all author ids (versions + current) to names in one query.
+  const ids = new Set<string>();
+  if (doc.updated_by) ids.add(doc.updated_by);
+  for (const r of rows ?? []) if (r.created_by) ids.add(r.created_by);
+  const nameById = new Map<string, string>();
+  if (ids.size) {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, name")
+      .in("id", [...ids]);
+    for (const p of profs ?? []) nameById.set(p.id, p.name);
+  }
+
+  const current: VersionRow = {
+    id: "current",
+    createdAt: doc.updated_at,
+    authorName: doc.updated_by ? nameById.get(doc.updated_by) ?? null : null,
+    source: "user",
+    label: null,
+    isCurrent: true,
+  };
+
+  const versions: VersionRow[] = (rows ?? []).map((r) => ({
+    id: r.id,
+    createdAt: r.created_at,
+    authorName: r.created_by ? nameById.get(r.created_by) ?? null : null,
+    source: r.source,
+    label: r.label,
+    isCurrent: false,
+  }));
+
+  return { versions: [current, ...versions] };
+}
+
+/** Full content of one stored version (for the diff view). */
+export async function getVersionContent(versionId: string): Promise<{ content: string } | { error: string }> {
+  const supabase = await createClient();
+  if (!versionId) return { error: "Nedostaje verzija." };
+  const { data, error } = await supabase
+    .from("canvas_versions")
+    .select("content")
+    .eq("id", versionId)
+    .maybeSingle();
+  if (error || !data) return { error: "Verzija nije pronađena." };
+  return { content: data.content };
+}
+
+/**
+ * Snapshot the current content as a named checkpoint — the "Spremi verziju"
+ * button. Unlike the silent auto-snapshots, this one carries a label the team
+ * chose, and shows up highlighted in history.
+ */
+export async function saveNamedVersion(projectId: string, label: string) {
+  const supabase = await createClient();
+  if (!projectId) return { error: "Nedostaje projekt." };
+  const name = label.trim();
+  if (!name) return { error: "Naziv verzije ne može biti prazan." };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: doc } = await supabase
+    .from("canvas_docs")
+    .select("id, content")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (!doc) return { error: "Dokument ne postoji." };
+
+  const { error } = await supabase.from("canvas_versions").insert({
+    doc_id: doc.id,
+    content: doc.content,
+    source: "user",
+    label: name,
+    created_by: user?.id ?? null,
+  });
+  if (error) return { error: `Spremanje verzije nije uspjelo: ${error.message}` };
+
+  revalidatePath("/projekti");
+  return { ok: true };
+}
+
+/** Rename a stored version (add or change its label). */
+export async function renameVersion(versionId: string, label: string) {
+  const supabase = await createClient();
+  if (!versionId) return { error: "Nedostaje verzija." };
+  const { error } = await supabase
+    .from("canvas_versions")
+    .update({ label: label.trim() || null })
+    .eq("id", versionId);
+  if (error) return { error: `Preimenovanje nije uspjelo: ${error.message}` };
+  revalidatePath("/projekti");
+  return { ok: true };
+}
+
+/**
+ * Restore a stored version as the live content. The current content is first
+ * snapshotted (so restoring is itself undoable), then overwritten. Returns the
+ * restored content so the editor can update without a reload.
+ */
+export async function restoreVersion(projectId: string, versionId: string) {
+  const supabase = await createClient();
+  if (!projectId || !versionId) return { error: "Nedostaju podaci." };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: doc } = await supabase
+    .from("canvas_docs")
+    .select("id, content")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (!doc) return { error: "Dokument ne postoji." };
+
+  const { data: version } = await supabase
+    .from("canvas_versions")
+    .select("content")
+    .eq("id", versionId)
+    .maybeSingle();
+  if (!version) return { error: "Verzija nije pronađena." };
+
+  // Snapshot current before overwriting, so the restore can itself be undone.
+  if (doc.content !== version.content) {
+    await supabase.from("canvas_versions").insert({
+      doc_id: doc.id,
+      content: doc.content,
+      source: "user",
+      created_by: user?.id ?? null,
+    });
+  }
+
+  const { error } = await supabase
+    .from("canvas_docs")
+    .update({ content: version.content, updated_at: new Date().toISOString(), updated_by: user?.id ?? null })
+    .eq("id", doc.id);
+  if (error) return { error: `Vraćanje nije uspjelo: ${error.message}` };
+
+  revalidatePath("/projekti");
+  return { ok: true, content: version.content };
+}
+
 export async function deleteDocument(formData: FormData) {
   const supabase = await createClient();
   const docId = String(formData.get("docId") ?? "");
