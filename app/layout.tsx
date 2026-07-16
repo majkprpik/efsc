@@ -23,7 +23,7 @@ export default function RootLayout({
       className={cn("h-full antialiased", geist.variable)}
       suppressHydrationWarning
     >
-      <body className="min-h-full font-sans">
+      <body className="h-full font-sans">
         <ThemeProvider>
           {children}
           <Toaster />

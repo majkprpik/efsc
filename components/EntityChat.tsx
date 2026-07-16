@@ -136,7 +136,7 @@ export function EntityChat({
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {!loaded ? (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
@@ -207,7 +207,7 @@ export function EntityChatPanel(props: {
 }) {
   // One header is enough — EntityChat already names itself and the entity.
   return (
-    <div className="chat-panel hidden w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
+    <div className="chat-panel hidden min-h-0 w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
       <EntityChat {...props} />
     </div>
   );
