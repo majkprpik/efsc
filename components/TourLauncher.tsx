@@ -15,6 +15,7 @@ import { PlayCircle, Square, ChevronRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -65,8 +66,10 @@ export function TourLauncher() {
         }
       />
       <DropdownMenuContent side="top" align="start" className="w-64">
+        {/* Every DropdownMenuLabel is a Base UI Menu.GroupLabel and throws
+            unless it sits inside a Menu.Group — a plain wrapper is not enough. */}
         {TOURS.map((tour) => (
-          <div key={tour.id}>
+          <DropdownMenuGroup key={tour.id}>
             <DropdownMenuLabel className="flex items-baseline justify-between gap-2">
               <span>{tour.label}</span>
               <span className="text-xs font-normal text-muted-foreground">
@@ -95,7 +98,7 @@ export function TourLauncher() {
                 {SEGMENT_LABELS[tour.id]?.[seg - 1] ?? `Dio ${seg}`}
               </DropdownMenuItem>
             ))}
-          </div>
+          </DropdownMenuGroup>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
