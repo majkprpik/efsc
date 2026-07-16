@@ -70,6 +70,75 @@ export async function uploadDocument(formData: FormData) {
   return { ok: true };
 }
 
+/**
+ * Load (or lazily create) the working "prijava" document for a project.
+ * One document per project — the row is created on first open so the editor
+ * always has something to bind to.
+ */
+export async function loadCanvas(projectId: string) {
+  const supabase = await createClient();
+  if (!projectId) return { error: "Nedostaje projekt." };
+
+  const { data: existing } = await supabase
+    .from("canvas_docs")
+    .select("id, content, updated_at")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (existing) {
+    return { ok: true, id: existing.id, content: existing.content, updatedAt: existing.updated_at };
+  }
+
+  const { data: created, error } = await supabase
+    .from("canvas_docs")
+    .insert({ project_id: projectId })
+    .select("id, content, updated_at")
+    .single();
+  if (error || !created) {
+    return { error: `Ne mogu otvoriti dokument: ${error?.message ?? "nepoznato"}` };
+  }
+  return { ok: true, id: created.id, content: created.content, updatedAt: created.updated_at };
+}
+
+/**
+ * Save the document, snapshotting the previous content into canvas_versions
+ * first. `source` marks whether this save came from a manual edit or from
+ * accepting an AI change — history keeps both so "vrati" can go back either way.
+ */
+export async function saveCanvas(projectId: string, content: string, source: "user" | "ai" = "user") {
+  const supabase = await createClient();
+  if (!projectId) return { error: "Nedostaje projekt." };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: doc } = await supabase
+    .from("canvas_docs")
+    .select("id, content")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (!doc) return { error: "Dokument ne postoji." };
+
+  // Snapshot the current content before overwriting — skip if unchanged.
+  if (doc.content !== content) {
+    await supabase.from("canvas_versions").insert({
+      doc_id: doc.id,
+      content: doc.content,
+      source,
+      created_by: user?.id ?? null,
+    });
+  }
+
+  const { error } = await supabase
+    .from("canvas_docs")
+    .update({ content, updated_at: new Date().toISOString(), updated_by: user?.id ?? null })
+    .eq("id", doc.id);
+  if (error) return { error: `Spremanje nije uspjelo: ${error.message}` };
+
+  revalidatePath("/projekti");
+  return { ok: true };
+}
+
 export async function deleteDocument(formData: FormData) {
   const supabase = await createClient();
   const docId = String(formData.get("docId") ?? "");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Sparkles, Loader2, MessageCircle, X } from "lucide-react";
+import { Send, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,13 +24,7 @@ type Msg = {
  * priča s AI-em — asistent je tu za klijenta — nego se piše poruka klijentu,
  * potpisana imenom pošiljatelja.
  */
-function PortalChatBody({
-  onClose,
-  asTeam = null,
-}: {
-  onClose?: () => void;
-  asTeam?: string | null;
-}) {
+function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
   const t = useT();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -150,18 +144,9 @@ function PortalChatBody({
             {asTeam ? t.portal.chatPodnaslovTim : t.portal.chatPodnaslov}
           </div>
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            aria-label={t.portal.chatZatvori}
-            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
-          >
-            <X className="size-4" />
-          </button>
-        )}
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {!loaded ? (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
@@ -235,31 +220,24 @@ function PortalChatBody({
 }
 
 /**
- * Portal je jedan uski stupac, pa chat ne može stalno stajati sa strane kao u
- * Orbitu. Umjesto toga je gumb u kutu koji otvara panel — isti na svim širinama.
+ * Pomoć stoji stalno sa strane, kao AI panel na Orbitovim stranicama — nije
+ * skočni prozor. Na mobitelu nema mjesta za split pa ide kratka napomena.
  */
-export function PortalChat({ asTeam = null }: { asTeam?: string | null }) {
-  const t = useT();
-  const [open, setOpen] = useState(false);
-
+export function PortalChatPanel({ asTeam = null }: { asTeam?: string | null }) {
   return (
-    <>
-      {open && (
-        <div className="fixed inset-0 z-50 sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[560px] sm:max-h-[calc(100vh-8rem)] sm:w-[380px]">
-          <div className="chat-panel flex h-full flex-col overflow-hidden border bg-card shadow-xl sm:rounded-xl">
-            <PortalChatBody onClose={() => setOpen(false)} asTeam={asTeam} />
-          </div>
-        </div>
-      )}
+    <div className="chat-panel hidden min-h-0 w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
+      <PortalChatBody asTeam={asTeam} />
+    </div>
+  );
+}
 
-      <Button
-        onClick={() => setOpen((v) => !v)}
-        size="lg"
-        className="fixed bottom-6 right-6 z-50 h-12 rounded-full shadow-lg"
-      >
-        {open ? <X className="size-4" /> : <MessageCircle className="size-4" />}
-        {open ? t.portal.chatZatvori : t.portal.chatOtvori}
-      </Button>
-    </>
+/** Napomena na mobitelu, ondje gdje bi na desktopu bio panel pomoći. */
+export function PortalChatMobileNote() {
+  const t = useT();
+  return (
+    <div className="flex items-center justify-center gap-2 border-t px-4 py-3 text-xs text-muted-foreground md:hidden">
+      <Sparkles className="size-3.5" />
+      {t.portal.chatPodnaslov}
+    </div>
   );
 }

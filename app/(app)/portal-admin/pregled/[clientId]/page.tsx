@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PortalChecklist, type ChecklistItem } from "@/components/PortalChecklist";
-import { PortalChat } from "@/components/PortalChat";
+import { PortalChatPanel, PortalChatMobileNote } from "@/components/PortalChat";
 
 /**
  * Timski pregled: klijentov portal onakav kakav ga on vidi, i s uploadom.
@@ -42,29 +42,34 @@ export default async function PortalPreviewPage({
   const items = (rows ?? []) as ChecklistItem[];
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="flex items-center justify-center gap-2 border-b bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-400">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-muted/30">
+      <div className="flex shrink-0 items-center justify-center gap-2 border-b bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-400">
         <Eye className="size-3.5" />
         Pregled — ovako portal vidi {client.naziv}. Što uploadaš ovdje njemu piše da si
         dostavio ti.
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
-        <header className="mb-8">
-          <div className="text-[10px] uppercase tracking-[1.5px] text-muted-foreground">
-            Orbit · esfc.hr
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+            <header className="mb-8">
+              <div className="text-[10px] uppercase tracking-[1.5px] text-muted-foreground">
+                Orbit · esfc.hr
+              </div>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight">{client.naziv}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">Prijavljen kao klijent</p>
+            </header>
+
+            <PortalChecklist
+              items={items}
+              asTeam={client.id}
+              submittedAt={client.submitted_at}
+            />
           </div>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{client.naziv}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Prijavljen kao klijent</p>
-        </header>
+          <PortalChatMobileNote />
+        </div>
 
-        <PortalChecklist
-          items={items}
-          asTeam={client.id}
-          submittedAt={client.submitted_at}
-        />
-
-        <PortalChat asTeam={client.id} />
+        <PortalChatPanel asTeam={client.id} />
       </div>
     </div>
   );

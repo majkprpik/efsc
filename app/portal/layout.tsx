@@ -7,7 +7,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
   return (
     <LocaleProvider locale={locale}>
-      <div className="min-h-screen bg-muted/30">{children}</div>
+      <div className="flex h-screen flex-col overflow-hidden bg-muted/30">{children}</div>
     </LocaleProvider>
   );
 }

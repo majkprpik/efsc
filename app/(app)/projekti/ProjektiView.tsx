@@ -5,7 +5,10 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StatusBadge, Empty, Dot } from "@/components/shared";
+import { CanvasEditor } from "@/components/CanvasEditor";
+import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
 import { DocDialog } from "@/components/DocDialog";
 import { DocUploadButton, DocDropzone } from "@/components/DocUpload";
 import { AddTaskButton } from "@/components/AddTask";
@@ -78,7 +81,8 @@ export function ProjektiView({
   const okCount = selectedDocs.filter((d) => d.uploaded).length;
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[300px_1fr] overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+      <div className="grid min-h-0 flex-1 grid-cols-[300px_1fr] overflow-hidden">
       {/* LIST */}
       <div className="flex min-h-0 flex-col overflow-y-auto border-r">
         <div className="flex flex-wrap gap-1.5 border-b p-3">
@@ -118,8 +122,19 @@ export function ProjektiView({
       </div>
 
       {/* DETAIL */}
-      <div className="min-h-0 overflow-y-auto p-6">
+      <div className="flex min-h-0 flex-col overflow-hidden">
         {selected ? (
+          <Tabs
+            key={selected.id}
+            defaultValue="pregled"
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+          >
+            <TabsList variant="line" className="shrink-0 px-6 pt-3">
+              <TabsTrigger value="pregled">{t.canvas.tabPregled}</TabsTrigger>
+              <TabsTrigger value="prijava">{t.canvas.tabPrijava}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pregled" className="min-h-0 flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-3xl">
             <div className="mb-5 flex items-start gap-4 border-b pb-5">
               <div
@@ -246,6 +261,12 @@ export function ProjektiView({
               </CardContent>
             </Card>
           </div>
+            </TabsContent>
+
+            <TabsContent value="prijava" className="min-h-0 flex-1 overflow-hidden">
+              <CanvasEditor projectId={selected.id} />
+            </TabsContent>
+          </Tabs>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
             <Folder className="size-10 opacity-20" />
@@ -253,6 +274,11 @@ export function ProjektiView({
           </div>
         )}
       </div>
+      </div>
+      {selected && (
+        <EntityChatPanel entityKind="projekt" entityId={selected.id} title={selected.naziv} />
+      )}
+      <EntityChatMobileNote />
     </div>
   );
 }
