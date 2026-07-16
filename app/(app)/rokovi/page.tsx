@@ -1,14 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, Empty } from "@/components/shared";
 import { daysUntil, shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
-const DAYS = ["nedjelja", "ponedjeljak", "utorak", "srijeda", "četvrtak", "petak", "subota"];
-const MONTHS = ["siječnja", "veljače", "ožujka", "travnja", "svibnja", "lipnja", "srpnja", "kolovoza", "rujna", "listopada", "studenog", "prosinca"];
 
 export default async function RokoviPage() {
+  const t = await getT();
+  const DAYS = t.rokovi.dani;
+  const MONTHS = t.rokovi.mjeseci;
   const supabase = await createClient();
   const { data: rokovi } = await supabase
     .from("deadlines")
@@ -20,7 +22,7 @@ export default async function RokoviPage() {
 
   return (
     <>
-      <PageHeader section="rokovi" title="Rokovi" />
+      <PageHeader section="rokovi" title={t.nav.rokovi} />
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-3xl">
           {/* today banner */}
@@ -50,7 +52,7 @@ export default async function RokoviPage() {
                       <span className={cn("min-w-[48px] text-sm font-medium", dateCls)}>{shortDate(r.datum)}</span>
                       <span className="min-w-0 flex-1 truncate text-sm">{r.text}</span>
                       <span className="text-xs text-muted-foreground">
-                        {days === null ? "" : days < 0 ? "prošlo" : `za ${days}d.`}
+                        {days === null ? "" : days < 0 ? t.rokovi.proslo : t.rokovi.zaDana.replace("{n}", String(days))}
                       </span>
                       {urg === "urg" && <Badge className="border-transparent bg-red-500/15 text-red-700 dark:text-red-400">hitno</Badge>}
                       {urg === "warn" && <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">uskoro</Badge>}
@@ -58,7 +60,7 @@ export default async function RokoviPage() {
                   );
                 })
               ) : (
-                <Empty>Nema rokova</Empty>
+                <Empty>{t.rokovi.prazno}</Empty>
               )}
             </CardContent>
           </Card>

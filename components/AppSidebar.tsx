@@ -32,35 +32,38 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RowPending } from "@/components/RowPending";
 import { sectionOf } from "@/components/shared";
+import { LocaleToggle } from "@/components/LocaleToggle";
+import { useT } from "@/lib/i18n/client";
 import { TourLauncher } from "@/components/TourLauncher";
 
 type Item = {
   href: string;
-  label: string;
+  /** key into t.nav */
+  label: keyof ReturnType<typeof useT>["nav"];
   icon: React.ComponentType<{ className?: string }>;
   badgeKey?: string;
 };
 
-const SECTIONS: { title: string; items: Item[] }[] = [
-  { title: "Pregled", items: [{ href: "/", label: "Dashboard", icon: LayoutDashboard }] },
+const SECTIONS: { title: keyof ReturnType<typeof useT>["nav"]; items: Item[] }[] = [
+  { title: "pregled", items: [{ href: "/", label: "dashboard", icon: LayoutDashboard }] },
   {
-    title: "Poslovanje",
+    title: "poslovanje",
     items: [
-      { href: "/klijenti", label: "Klijenti", icon: Users, badgeKey: "klijenti" },
-      { href: "/potencijalni", label: "Potencijalni", icon: UserPlus, badgeKey: "potencijalni" },
-      { href: "/natjecaji", label: "Natječaji", icon: Trophy, badgeKey: "natjecaji" },
-      { href: "/projekti", label: "Projekti", icon: Folder, badgeKey: "projekti" },
+      { href: "/klijenti", label: "klijenti", icon: Users, badgeKey: "klijenti" },
+      { href: "/potencijalni", label: "potencijalni", icon: UserPlus, badgeKey: "potencijalni" },
+      { href: "/natjecaji", label: "natjecaji", icon: Trophy, badgeKey: "natjecaji" },
+      { href: "/projekti", label: "projekti", icon: Folder, badgeKey: "projekti" },
     ],
   },
   {
-    title: "Rad",
+    title: "rad",
     items: [
-      { href: "/taskovi", label: "Taskovi", icon: ListChecks },
-      { href: "/rokovi", label: "Rokovi", icon: Clock },
-      { href: "/portal-admin", label: "Portal", icon: Share2 },
+      { href: "/taskovi", label: "taskovi", icon: ListChecks },
+      { href: "/rokovi", label: "rokovi", icon: Clock },
+      { href: "/portal-admin", label: "portal", icon: Share2 },
     ],
   },
-  { title: "Analitika", items: [{ href: "/financije", label: "Financije", icon: Coins }] },
+  { title: "analitika", items: [{ href: "/financije", label: "financije", icon: Coins }] },
 ];
 
 export function AppSidebar({
@@ -71,6 +74,7 @@ export function AppSidebar({
   profile: { name: string; email: string; initials: string };
 }) {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <Sidebar>
@@ -84,7 +88,7 @@ export function AppSidebar({
       <SidebarContent>
         {SECTIONS.map((section) => (
           <SidebarGroup key={section.title}>
-            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+            <SidebarGroupLabel>{t.nav[section.title]}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {
@@ -96,11 +100,11 @@ export function AppSidebar({
                     <SidebarMenuItem key={item.href} data-section={sectionOf(item.href)?.key}>
                       <SidebarMenuButton
                         isActive={active}
-                        data-tour={`nav-${item.label.toLowerCase()}`}
+                        data-tour={`nav-${item.label}`}
                         render={
                           <Link href={item.href}>
                             <Icon className="size-4" />
-                            <span>{item.label}</span>
+                            <span>{t.nav[item.label]}</span>
                             <RowPending />
                           </Link>
                         }
@@ -129,11 +133,12 @@ export function AppSidebar({
             <div className="truncate text-sm font-medium">{profile.name}</div>
             <div className="truncate text-xs text-muted-foreground">{profile.email}</div>
           </div>
+          <LocaleToggle />
           <ThemeToggle />
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              title="Odjava"
+              title={t.nav.odjava}
               className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
             >
               <LogOut className="size-4" />

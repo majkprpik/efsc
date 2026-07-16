@@ -1,0 +1,306 @@
+/**
+ * UI copy in both languages. Document *contents* are never translated — they
+ * are whatever the file says — and the AI answers in the active language
+ * because the prompt carries it, not because anything here is translated.
+ */
+
+export const LOCALES = ["hr", "en"] as const;
+export type Locale = (typeof LOCALES)[number];
+export const DEFAULT_LOCALE: Locale = "hr";
+export const LOCALE_COOKIE = "orbit-locale";
+
+export function isLocale(v: string | undefined): v is Locale {
+  return v === "hr" || v === "en";
+}
+
+const hr = {
+  nav: {
+    pregled: "Pregled",
+    poslovanje: "Poslovanje",
+    rad: "Rad",
+    analitika: "Analitika",
+    dashboard: "Dashboard",
+    klijenti: "Klijenti",
+    potencijalni: "Potencijalni",
+    natjecaji: "Natječaji",
+    projekti: "Projekti",
+    taskovi: "Taskovi",
+    rokovi: "Rokovi",
+    financije: "Financije",
+    odjava: "Odjava",
+    portal: "Portal",
+  },
+  common: {
+    ucitavanje: "Učitavanje…",
+    nemaPodataka: "Nema podataka",
+    otvori: "otvori",
+    preuzmi: "Preuzmi",
+    zatvori: "Zatvori",
+    spremi: "Spremi",
+    odustani: "Odustani",
+    svi: "svi",
+    klijent: "Klijent",
+    rok: "Rok",
+    iznos: "Iznos",
+    status: "Status",
+    napredak: "Napredak",
+    dokumentacija: "Dokumentacija",
+    kompletno: "kompletno",
+    dodaj: "Dodaj",
+  },
+  statusi: {
+    Aktivan: "Aktivan",
+    "U pripremi": "U pripremi",
+    Kasni: "Kasni",
+    Završen: "Završen",
+    aktivan: "aktivan",
+    zatvoren: "zatvoren",
+    arhiva: "arhiva",
+    potencijalni: "potencijalni",
+    active: "aktivan",
+    inactive: "neaktivan",
+  } as Record<string, string>,
+  prioritet: { h: "hitno", m: "visok", l: "nizak" },
+  projekti: {
+    naslov: "Projekti",
+    prazno: "Nema projekata",
+    odaberi: "Odaberi projekt",
+    filteri: { svi: "svi", Aktivan: "aktivni", "U pripremi": "priprema", Kasni: "kasni", Završen: "završeni" } as Record<string, string>,
+    podNatjecajem: "Projekti pod natječajem",
+    taskovi: "Taskovi",
+    nemaDokumenata: "Nema dokumenata",
+    povuciDatoteku: "Povuci datoteku ili",
+    klikniUpload: "klikni za upload",
+  },
+  natjecaji: {
+    naslov: "Natječaji",
+    prazno: "Nema natječaja",
+    odaberi: "Odaberi natječaj",
+    filteri: { svi: "svi", aktivan: "aktivni", zatvoren: "zatvoreni", arhiva: "arhiva" } as Record<string, string>,
+    rokPrijave: "Rok prijave",
+    klijenata: "Klijenata",
+    projekata: "Projekata",
+    dokumentiNatjecaja: "Dokumenti natječaja",
+    sufinanciranje: "sufinanciranje",
+    kratica: { klijenata: "kl." },
+  },
+  dokument: {
+    nijeUploadano: "nije uploadano",
+    klikniPregled: "klikni za pregled i AI chat",
+    nemaPregleda: "Za ovaj tip dokumenta nema pregleda u browseru.",
+    pregledNijeUspio: "Pregled nije uspio",
+    ispitajKrozAi: "Sadržaj možeš ispitati kroz AI chat desno ili preuzeti datoteku.",
+    neMoguUcitati: "Ne mogu učitati dokument.",
+    praznaDatoteka: "Prazna datoteka.",
+    tipovi: { pdf: "PDF", docx: "Word", xlsx: "Excel", txt: "Tekst", csv: "CSV", slika: "Slika" } as Record<string, string>,
+  },
+  chat: {
+    naslov: "AI asistent",
+    pitajBiloSto: "Pitaj bilo što o ovoj stavci.",
+    placeholder: "Pitaj AI…",
+    uIzradi: "AI asistent — još u izradi, otvori na desktopu.",
+    greska: "Greška.",
+  },
+  upload: {
+    uspjeh: "Dokument uploadan ✓",
+    nedostajeDatoteka: "Nedostaje datoteka.",
+    nijeUspio: "Upload nije uspio",
+  },
+  klijenti: {
+    naslov: "Klijenti",
+    prazno: "Nema klijenata",
+    odaberi: "Odaberi klijenta",
+    natjecajiSekcija: "Natječaji",
+    projektiSekcija: "Projekti",
+  },
+  potencijalni: {
+    naslov: "Potencijalni",
+    prazno: "Nema potencijalnih",
+    odaberi: "Odaberi priliku",
+    aiSazetak: "AI sažetak ideje",
+    biljeske: "Bilješke",
+    nemaBiljeski: "Nema bilješki",
+  },
+  taskovi: {
+    naslov: "Taskovi",
+    prazno: "Nema taskova",
+    kolone: { todo: "Za uraditi", doing: "U tijeku", done: "Završeno" } as Record<string, string>,
+  },
+  rokovi: {
+    naslov: "Rokovi",
+    prazno: "Nema rokova",
+    proslo: "prošlo",
+    /** {n} → broj dana */
+    zaDana: "za {n}d.",
+    danas: "danas",
+    koji_se_blize: "Rokovi koji se bliže",
+    dani: ["nedjelja", "ponedjeljak", "utorak", "srijeda", "četvrtak", "petak", "subota"],
+    mjeseci: [
+      "siječnja", "veljače", "ožujka", "travnja", "svibnja", "lipnja",
+      "srpnja", "kolovoza", "rujna", "listopada", "studenog", "prosinca",
+    ],
+  },
+  financije: {
+    naslov: "Financije",
+    ukupnoPrihodi: "Ukupno prihodi",
+    naplaceno: "Naplaćeno",
+    troskovi: "Troškovi",
+    dospjelo: "Dospjelo (kasni)",
+    transakcije: "Transakcije",
+    prazno: "Nema stavki",
+  },
+};
+
+const en: typeof hr = {
+  nav: {
+    pregled: "Overview",
+    poslovanje: "Business",
+    rad: "Work",
+    analitika: "Analytics",
+    dashboard: "Dashboard",
+    klijenti: "Clients",
+    potencijalni: "Leads",
+    natjecaji: "Tenders",
+    projekti: "Projects",
+    taskovi: "Tasks",
+    rokovi: "Deadlines",
+    financije: "Finances",
+    odjava: "Sign out",
+    portal: "Portal",
+  },
+  common: {
+    ucitavanje: "Loading…",
+    nemaPodataka: "No data",
+    otvori: "open",
+    preuzmi: "Download",
+    zatvori: "Close",
+    spremi: "Save",
+    odustani: "Cancel",
+    svi: "all",
+    klijent: "Client",
+    rok: "Deadline",
+    iznos: "Amount",
+    status: "Status",
+    napredak: "Progress",
+    dokumentacija: "Documents",
+    kompletno: "complete",
+    dodaj: "Add",
+  },
+  statusi: {
+    Aktivan: "Active",
+    "U pripremi": "In preparation",
+    Kasni: "Overdue",
+    Završen: "Completed",
+    aktivan: "open",
+    zatvoren: "closed",
+    arhiva: "archived",
+    potencijalni: "lead",
+    active: "active",
+    inactive: "inactive",
+  },
+  prioritet: { h: "urgent", m: "high", l: "low" },
+  projekti: {
+    naslov: "Projects",
+    prazno: "No projects",
+    odaberi: "Select a project",
+    filteri: { svi: "all", Aktivan: "active", "U pripremi": "preparation", Kasni: "overdue", Završen: "completed" },
+    podNatjecajem: "Projects under this tender",
+    taskovi: "Tasks",
+    nemaDokumenata: "No documents",
+    povuciDatoteku: "Drop a file or",
+    klikniUpload: "click to upload",
+  },
+  natjecaji: {
+    naslov: "Tenders",
+    prazno: "No tenders",
+    odaberi: "Select a tender",
+    filteri: { svi: "all", aktivan: "open", zatvoren: "closed", arhiva: "archived" },
+    rokPrijave: "Application deadline",
+    klijenata: "Clients",
+    projekata: "Projects",
+    dokumentiNatjecaja: "Tender documents",
+    sufinanciranje: "co-financing",
+    kratica: { klijenata: "cl." },
+  },
+  dokument: {
+    nijeUploadano: "not uploaded",
+    klikniPregled: "click to preview and chat with AI",
+    nemaPregleda: "This file type has no in-browser preview.",
+    pregledNijeUspio: "Preview failed",
+    ispitajKrozAi: "You can ask the AI about it on the right, or download the file.",
+    neMoguUcitati: "Could not load the document.",
+    praznaDatoteka: "Empty file.",
+    tipovi: { pdf: "PDF", docx: "Word", xlsx: "Excel", txt: "Text", csv: "CSV", slika: "Image" },
+  },
+  chat: {
+    naslov: "AI assistant",
+    pitajBiloSto: "Ask anything about this item.",
+    placeholder: "Ask the AI…",
+    uIzradi: "AI assistant — still in progress, open on desktop.",
+    greska: "Something went wrong.",
+  },
+  upload: {
+    uspjeh: "Document uploaded ✓",
+    nedostajeDatoteka: "No file provided.",
+    nijeUspio: "Upload failed",
+  },
+  klijenti: {
+    naslov: "Clients",
+    prazno: "No clients",
+    odaberi: "Select a client",
+    natjecajiSekcija: "Tenders",
+    projektiSekcija: "Projects",
+  },
+  potencijalni: {
+    naslov: "Leads",
+    prazno: "No leads",
+    odaberi: "Select a lead",
+    aiSazetak: "AI summary of the idea",
+    biljeske: "Notes",
+    nemaBiljeski: "No notes",
+  },
+  taskovi: {
+    naslov: "Tasks",
+    prazno: "No tasks",
+    kolone: { todo: "To do", doing: "In progress", done: "Done" },
+  },
+  rokovi: {
+    naslov: "Deadlines",
+    prazno: "No deadlines",
+    proslo: "passed",
+    zaDana: "in {n}d",
+    danas: "today",
+    koji_se_blize: "Upcoming deadlines",
+    dani: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    mjeseci: [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December",
+    ],
+  },
+  financije: {
+    naslov: "Finances",
+    ukupnoPrihodi: "Total income",
+    naplaceno: "Invoiced",
+    troskovi: "Costs",
+    dospjelo: "Overdue",
+    transakcije: "Transactions",
+    prazno: "No entries",
+  },
+};
+
+export const dictionaries = { hr, en };
+export type Dictionary = typeof hr;
+
+export function getDictionary(locale: Locale): Dictionary {
+  return dictionaries[locale] ?? dictionaries[DEFAULT_LOCALE];
+}
+
+/**
+ * Status values live in the database in Croatian ("Aktivan", "Kasni", …) —
+ * they're data, not copy. Translate on display and leave the rows alone.
+ * Unknown values pass through, so a new status shows up as-is rather than
+ * disappearing.
+ */
+export function tStatus(status: string, locale: Locale): string {
+  return getDictionary(locale).statusi[status] ?? status;
+}

@@ -10,6 +10,7 @@
 // the plain route — dropping ?demo=1 unmounts the bridge and takes every overlay
 // with it.
 
+import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PlayCircle, Square, ChevronRight } from "lucide-react";
 import {
@@ -21,14 +22,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TOURS, findTour, tourUrl } from "@/lib/demo-scenarios/registry";
+import { TOUR_ENDED, TOURS, findTour, tourUrl } from "@/lib/demo-scenarios/registry";
 
 export function TourLauncher() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const scenario = params.get("scenario");
-  const running = params.get("demo") === "1" && !!scenario;
+  const url = params.toString();
+  const inTourUrl = params.get("demo") === "1" && !!scenario;
+
+  // A finished tour leaves its own URL behind, so the URL alone cannot say
+  // whether a run is still going; the scenario announces the end itself.
+  const [ended, setEnded] = useState(false);
+  useEffect(() => {
+    const onEnd = () => setEnded(true);
+    window.addEventListener(TOUR_ENDED, onEnd);
+    return () => window.removeEventListener(TOUR_ENDED, onEnd);
+  }, []);
+
+  // Starting another tour navigates, which is what clears the ended state.
+  useEffect(() => setEnded(false), [url]);
+
+  const running = inTourUrl && !ended;
 
   // Navigating away unmounts the bridge (and its overlays), but the scenario
   // module lives on and would keep narrating; abort() silences it first.

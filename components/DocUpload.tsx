@@ -5,17 +5,19 @@ import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadDocument } from "@/app/(app)/projekti/actions";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/client";
 
 /** Upload button for a single checklist row (docId) or a new doc (projectId only). */
 export function DocUploadButton({
   projectId,
   docId,
-  label = "Dodaj",
+  label,
 }: {
   projectId: string;
   docId?: string;
   label?: string;
 }) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, start] = useTransition();
 
@@ -27,7 +29,7 @@ export function DocUploadButton({
     start(async () => {
       const res = await uploadDocument(fd);
       if (res?.error) toast.error(res.error);
-      else toast.success("Dokument uploadan ✓");
+      else toast.success(t.upload.uspjeh);
     });
   }
 
@@ -50,7 +52,7 @@ export function DocUploadButton({
         onClick={() => inputRef.current?.click()}
       >
         {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
-        {label}
+        {label ?? t.common.dodaj}
       </Button>
     </>
   );
@@ -58,6 +60,7 @@ export function DocUploadButton({
 
 /** Dropzone for adding new documents to a project. */
 export function DocDropzone({ projectId }: { projectId: string }) {
+  const t = useT();
   const [drag, setDrag] = useState(false);
   const [pending, start] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,7 +72,7 @@ export function DocDropzone({ projectId }: { projectId: string }) {
     start(async () => {
       const res = await uploadDocument(fd);
       if (res?.error) toast.error(res.error);
-      else toast.success(`${file.name} uploadan ✓`);
+      else toast.success(`${file.name} ✓`);
     });
   }
 
@@ -107,7 +110,7 @@ export function DocDropzone({ projectId }: { projectId: string }) {
         <Upload className="size-5 text-muted-foreground" />
       )}
       <div className="text-sm text-muted-foreground">
-        Povuci datoteku ili <span className="text-primary">klikni za upload</span>
+        {t.projekti.povuciDatoteku} <span className="text-primary">{t.projekti.klikniUpload}</span>
       </div>
     </div>
   );

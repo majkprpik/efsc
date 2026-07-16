@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +8,8 @@ import { daysUntil, shortDate } from "@/lib/ui";
 import { Users, FolderKanban, UserPlus, CalendarClock } from "lucide-react";
 
 export default async function DashboardPage() {
+  const dict = await getT();
+  const locale = await getLocale();
   const supabase = await createClient();
 
   const [
@@ -50,7 +53,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader section="dashboard" title="Dashboard" />
+      <PageHeader section="dashboard" title={dict.nav.dashboard} />
       <div className="flex-1 overflow-y-auto p-6">
         <div data-tour="stat-row" className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Stat tour="stat-klijenti" label="Aktivni klijenti" value={activeClients ?? 0} icon={Users} />
@@ -78,11 +81,11 @@ export default async function DashboardPage() {
                           {(t.projects as { naziv: string } | null)?.naziv ?? "—"} · {shortDate(t.due)}
                         </div>
                       </div>
-                      <PriorityBadge p={t.priority} />
+                      <PriorityBadge p={t.priority} locale={locale} />
                     </div>
                   ))
                 ) : (
-                  <Empty>Nema taskova</Empty>
+                  <Empty>{dict.taskovi.prazno}</Empty>
                 )}
               </CardContent>
             </Card>
@@ -112,7 +115,7 @@ export default async function DashboardPage() {
                       <div className="w-24 shrink-0">
                         <Progress value={p.progress} className="h-1.5" />
                       </div>
-                      <StatusBadge status={p.status} />
+                      <StatusBadge status={p.status} locale={locale} />
                     </Link>
                   ))
                 ) : (
@@ -125,7 +128,7 @@ export default async function DashboardPage() {
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader className="flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm">Rokovi koji se bliže</CardTitle>
+                <CardTitle className="text-sm">{dict.rokovi.koji_se_blize}</CardTitle>
                 <Link href="/rokovi" className="text-xs text-muted-foreground hover:text-foreground">
                   kalendar →
                 </Link>
@@ -141,7 +144,7 @@ export default async function DashboardPage() {
                         <span className={`min-w-[44px] text-xs font-medium ${cls}`}>{shortDate(d.datum)}</span>
                         <span className="min-w-0 flex-1 truncate text-sm">{d.text}</span>
                         <span className="text-xs text-muted-foreground">
-                          {days !== null && days >= 0 ? `za ${days}d.` : "prošlo"}
+                          {days !== null && days >= 0 ? dict.rokovi.zaDana.replace("{n}", String(days)) : dict.rokovi.proslo}
                         </span>
                       </div>
                     );

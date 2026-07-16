@@ -11,6 +11,7 @@ import {
 import { DocViewer } from "@/components/DocViewer";
 import { DocChat } from "@/components/DocChat";
 import { DocDialogHeader } from "@/components/DocDialogHeader";
+import { useT } from "@/lib/i18n/client";
 
 export function DocDialog({
   docKind,
@@ -30,6 +31,7 @@ export function DocDialog({
   /** Where this document lives — project or tender name. */
   context?: string | null;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const canOpen = uploaded && !!storagePath;
 
@@ -65,12 +67,12 @@ export function DocDialog({
                 {fileName}
               </span>
               <span className="block text-xs text-muted-foreground">
-                {uploaded ? "klikni za pregled i AI chat" : "nije uploadano"}
+                {uploaded ? t.dokument.klikniPregled : t.dokument.nijeUploadano}
               </span>
             </span>
             {canOpen && (
               <span className="flex shrink-0 items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs text-muted-foreground transition group-hover:border-primary group-hover:text-primary">
-                <Eye className="size-3.5" /> Otvori
+                <Eye className="size-3.5" /> {t.common.otvori}
               </span>
             )}
           </button>

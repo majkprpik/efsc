@@ -17,6 +17,8 @@
 // Recording: run at 1440x900 or wider, and let each segment finish — the timing
 // constants are tuned against the generated audio, not against the clock.
 
+import { TOUR_ENDED } from "./registry";
+
 const BASE = "/narration/welcome";
 
 type Word = { word: string; start: number; end: number };
@@ -562,4 +564,7 @@ export async function boot() {
   controls = null;
   started = false;
   console.log(aborted ? "[tour] stopped" : "[tour] done");
+  // The URL still says ?demo=1, so nothing else can tell the launcher the run
+  // is over — without this it would offer "Stop" forever.
+  window.dispatchEvent(new CustomEvent(TOUR_ENDED));
 }

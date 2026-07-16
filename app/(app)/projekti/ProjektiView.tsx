@@ -9,6 +9,7 @@ import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { DocDialog } from "@/components/DocDialog";
 import { DocUploadButton, DocDropzone } from "@/components/DocUpload";
 import { shortDate } from "@/lib/ui";
+import { useT, useLocale } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 import { Folder, Trophy, CheckCircle2 } from "lucide-react";
 
@@ -42,13 +43,7 @@ export type ProjTask = {
   due: string | null;
 };
 
-const FILTERS = [
-  { key: "svi", label: "svi" },
-  { key: "Aktivan", label: "aktivni" },
-  { key: "U pripremi", label: "priprema" },
-  { key: "Kasni", label: "kasni" },
-  { key: "Završen", label: "završeni" },
-] as const;
+const FILTERS = ["svi", "Aktivan", "U pripremi", "Kasni", "Završen"] as const;
 
 export function ProjektiView({
   projects,
@@ -61,6 +56,8 @@ export function ProjektiView({
   tasks: ProjTask[];
   initialId?: string;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [filter, setFilter] = useState<string>("svi");
   const [selectedId, setSelectedId] = useState<string | undefined>(
     initialId ?? projects[0]?.id,
@@ -84,12 +81,9 @@ export function ProjektiView({
       <div className="flex min-h-0 flex-col overflow-y-auto border-r">
         <div className="flex flex-wrap gap-1.5 border-b p-3">
           {FILTERS.map((f) => (
-            <button key={f.key} onClick={() => setFilter(f.key)}>
-              <Badge
-                variant={filter === f.key ? "default" : "outline"}
-                className="cursor-pointer"
-              >
-                {f.label}
+            <button key={f} onClick={() => setFilter(f)}>
+              <Badge variant={filter === f ? "default" : "outline"} className="cursor-pointer">
+                {t.projekti.filteri[f]}
               </Badge>
             </button>
           ))}
@@ -113,11 +107,11 @@ export function ProjektiView({
                 </span>
                 <Progress value={p.progress} className="mt-1.5 h-1" />
               </span>
-              <StatusBadge status={p.status} />
+              <StatusBadge status={p.status} locale={locale} />
             </button>
           ))
         ) : (
-          <Empty>Nema projekata</Empty>
+          <Empty>{t.projekti.prazno}</Empty>
         )}
       </div>
 
@@ -140,14 +134,14 @@ export function ProjektiView({
                   {[selected.clientNaziv, selected.value].filter(Boolean).join(" · ")}
                 </div>
               </div>
-              <StatusBadge status={selected.status} />
+              <StatusBadge status={selected.status} locale={locale} />
             </div>
 
             <div data-tour="proj-info" className="mb-5 grid grid-cols-3 gap-3">
-              <Info label="Napredak" value={`${selected.progress}%`} />
-              <Info label="Rok" value={shortDate(selected.rok)} />
+              <Info label={t.common.napredak} value={`${selected.progress}%`} />
+              <Info label={t.common.rok} value={shortDate(selected.rok)} />
               <Info
-                label="Dokumentacija"
+                label={t.common.dokumentacija}
                 value={`${okCount}/${selectedDocs.length}`}
                 accent={
                   selectedDocs.length > 0 && okCount === selectedDocs.length ? "green" : undefined
@@ -163,18 +157,18 @@ export function ProjektiView({
               >
                 <Trophy className="size-4 shrink-0 text-muted-foreground" />
                 <span className="flex-1 truncate">{selected.natjecaj.naziv}</span>
-                <span className="text-xs text-primary">otvori →</span>
+                <span className="text-xs text-primary">{t.common.otvori} →</span>
               </Link>
             )}
 
             {/* DOCS CHECKLIST */}
             <div className="mb-2 flex items-center justify-between">
               <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Dokumentacija
+                {t.common.dokumentacija}
               </div>
               {selectedDocs.length > 0 && okCount === selectedDocs.length && (
                 <span className="flex items-center gap-1 text-xs text-emerald-600">
-                  <CheckCircle2 className="size-3.5" /> kompletno
+                  <CheckCircle2 className="size-3.5" /> {t.common.kompletno}
                 </span>
               )}
             </div>
@@ -205,7 +199,7 @@ export function ProjektiView({
                     </div>
                   ))
                 ) : (
-                  <Empty>Nema dokumenata</Empty>
+                  <Empty>{t.projekti.nemaDokumenata}</Empty>
                 )}
                 <div className="p-3">
                   <DocDropzone projectId={selected.id} />
@@ -217,7 +211,7 @@ export function ProjektiView({
             {selectedTasks.length > 0 && (
               <>
                 <div className="mb-2 mt-6 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Taskovi
+                  {t.projekti.taskovi}
                 </div>
                 <Card>
                   <CardContent className="p-0">
@@ -257,7 +251,7 @@ export function ProjektiView({
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
             <Folder className="size-10 opacity-20" />
-            Odaberi projekt
+            {t.projekti.odaberi}
           </div>
         )}
       </div>

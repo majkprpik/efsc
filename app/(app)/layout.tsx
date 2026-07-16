@@ -5,6 +5,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { DemoBridge } from "@/components/DemoBridge";
 import { SectionShell } from "@/components/SectionShell";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { LocaleProvider } from "@/lib/i18n/client";
+import { getLocale } from "@/lib/i18n/server";
 import { ini } from "@/lib/ui";
 
 /**
@@ -66,8 +68,10 @@ export default async function AppLayout({
   const email = profile?.email || claims.email || "";
   const name = profile?.name || email.split("@")[0] || "Korisnik";
   const profileProps = { name, email, initials: ini(name) };
+  const locale = await getLocale();
 
   return (
+    <LocaleProvider locale={locale}>
     <SidebarProvider>
       <Suspense
         fallback={<AppSidebar counts={{}} profile={profileProps} />}
@@ -83,5 +87,6 @@ export default async function AppLayout({
         <DemoBridge />
       </Suspense>
     </SidebarProvider>
+    </LocaleProvider>
   );
 }

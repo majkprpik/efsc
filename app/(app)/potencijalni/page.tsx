@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
 import { PotencijalniView, type Potencijalni, type PotNote } from "./PotencijalniView";
 
@@ -7,6 +8,7 @@ export default async function PotencijalniPage({
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
+  const t = await getT();
   const sp = await searchParams;
   const supabase = await createClient();
 
@@ -31,7 +33,7 @@ export default async function PotencijalniPage({
 
   return (
     <>
-      <PageHeader section="potencijalni" title="Potencijalni klijenti" />
+      <PageHeader section="potencijalni" title={t.nav.potencijalni} />
       <PotencijalniView pot={pot} notes={notes} initialId={sp.id} />
     </>
   );

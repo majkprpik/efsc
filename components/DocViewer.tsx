@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FileText, Download, Loader2 } from "lucide-react";
 import { getSignedUrl, getDocPreview, type DocPreview } from "@/app/(app)/doc-actions";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/client";
 
 type Kind = "pdf" | "docx" | "xlsx" | "image" | "text" | "other";
 
@@ -18,6 +19,7 @@ function kindOf(name: string): Kind {
 }
 
 export function DocViewer({ storagePath, fileName }: { storagePath: string; fileName: string }) {
+  const t = useT();
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [textContent, setTextContent] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
   if (!url) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-        Ne mogu učitati dokument.
+        {t.dokument.neMoguUcitati}
       </div>
     );
   }
@@ -94,7 +96,7 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
     return (
       <div className="h-full overflow-auto bg-muted/20 p-4">
         <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-foreground">
-          {textContent ?? "Prazna datoteka."}
+          {textContent ?? t.dokument.praznaDatoteka}
         </pre>
       </div>
     );
@@ -159,17 +161,17 @@ export function DocViewer({ storagePath, fileName }: { storagePath: string; file
       <FileText className="size-12 text-muted-foreground/40" />
       <div className="text-sm text-muted-foreground">
         {preview?.kind === "error"
-          ? `Pregled nije uspio: ${preview.message}`
-          : "Za ovaj tip dokumenta nema pregleda u browseru."}
+          ? `${t.dokument.pregledNijeUspio}: ${preview.message}`
+          : t.dokument.nemaPregleda}
         <br />
-        Sadržaj možeš ispitati kroz AI chat desno ili preuzeti datoteku.
+        {t.dokument.ispitajKrozAi}
       </div>
       <Button
         variant="outline"
         size="sm"
         render={
           <a href={url} download={fileName}>
-            <Download className="size-4" /> Preuzmi {fileName}
+            <Download className="size-4" /> {t.common.preuzmi} {fileName}
           </a>
         }
       />

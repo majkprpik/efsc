@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLocale } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireTeam } from "@/lib/auth-guard";
 import { getOpenAI, CHAT_MODEL } from "@/lib/openai";
@@ -40,6 +41,9 @@ export async function POST(req: Request) {
   const kind = docKindFromName(fileName);
 
   // Build the document context (cached text, or a vision image URL)
+  // Answer in the UI language.
+  const locale = await getLocale();
+  const lang = locale === "en" ? "engleskom" : "hrvatskom";
   let systemContent = "";
   let imageUrl: string | null = null;
 
@@ -50,7 +54,7 @@ export async function POST(req: Request) {
     imageUrl = signed?.signedUrl ?? null;
     systemContent =
       `Ti si asistent koji odgovara ISKLJUČIVO na temelju priloženog dokumenta (slika/sken) "${fileName}". ` +
-      `Ako informacija nije u dokumentu, jasno reci da je nema. Odgovaraj na hrvatskom.`;
+      `Ako informacija nije u dokumentu, jasno reci da je nema. Odgovaraj na ${lang}.`;
   } else {
     // Try cache first
     let text = "";
@@ -84,7 +88,7 @@ export async function POST(req: Request) {
     const clipped = text.slice(0, MAX_CHARS);
     systemContent =
       `Ti si asistent koji odgovara ISKLJUČIVO na temelju sadržaja dokumenta "${fileName}". ` +
-      `Ako informacija nije u dokumentu, jasno reci da je nema. Odgovaraj sažeto, na hrvatskom.\n\n` +
+      `Ako informacija nije u dokumentu, jasno reci da je nema. Odgovaraj sažeto, na ${lang}.\n\n` +
       `--- SADRŽAJ DOKUMENTA ---\n${clipped}${text.length > MAX_CHARS ? "\n[...skraćeno...]" : ""}`;
   }
 

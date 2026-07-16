@@ -13,6 +13,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { DEFAULT_LOCALE, getDictionary, tStatus, type Locale } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
 
 /**
@@ -80,21 +81,34 @@ const STATUS_VARIANT: Record<string, string> = {
   potencijalni: "border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400",
 };
 
-export function StatusBadge({ status, className }: { status: string; className?: string }) {
+/**
+ * `locale` is optional so this works in both server and client trees: client
+ * callers pass it from useLocale(), server pages from the cookie. Without it
+ * the raw database value shows, which is the Croatian original.
+ */
+export function StatusBadge({
+  status,
+  locale,
+  className,
+}: {
+  status: string;
+  locale?: Locale;
+  className?: string;
+}) {
   return (
     <Badge className={cn(STATUS_VARIANT[status] ?? "bg-muted text-muted-foreground", className)}>
-      {status}
+      {locale ? tStatus(status, locale) : status}
     </Badge>
   );
 }
 
-export function PriorityBadge({ p }: { p: "h" | "m" | "l" }) {
-  const map = {
-    h: ["bg-red-500/15 text-red-700 dark:text-red-400", "hitno"],
-    m: ["bg-amber-500/15 text-amber-700 dark:text-amber-400", "visok"],
-    l: ["bg-muted text-muted-foreground", "nizak"],
-  } as const;
-  const [cls, label] = map[p];
+export function PriorityBadge({ p, locale }: { p: "h" | "m" | "l"; locale?: Locale }) {
+  const cls = {
+    h: "bg-red-500/15 text-red-700 dark:text-red-400",
+    m: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+    l: "bg-muted text-muted-foreground",
+  }[p];
+  const label = getDictionary(locale ?? DEFAULT_LOCALE).prioritet[p];
   return <Badge className={cn("border-transparent", cls)}>{label}</Badge>;
 }
 
@@ -111,7 +125,7 @@ const ESF_BLUE = "#0B6EF5";
 const ESF_MASK_ID = "esf-knockout";
 
 /** ESF mark rebuilt as inline SVG so the loader costs no network request. */
-export function Spinner({ className, size = 40 }: { className?: string; size?: number }) {
+export function Spinner({ className, size = 40, label }: { className?: string; size?: number; label?: string }) {
   return (
     <svg
       viewBox="0 0 100 100"
@@ -119,7 +133,7 @@ export function Spinner({ className, size = 40 }: { className?: string; size?: n
       height={size}
       className={cn("shrink-0", className)}
       role="status"
-      aria-label="Učitavanje"
+      aria-label={label ?? "Loading"}
     >
       <defs>
         <mask id={ESF_MASK_ID}>
@@ -146,10 +160,10 @@ export function Spinner({ className, size = 40 }: { className?: string; size?: n
 }
 
 /** Full-panel loading state. Use inside a detail pane or as a page fallback. */
-export function Loading({ label = "Učitavanje…" }: { label?: string }) {
+export function Loading({ label }: { label?: string }) {
   return (
     <div className="flex h-full flex-1 flex-col items-center justify-center gap-4">
-      <Spinner size={44} />
+      <Spinner size={44} label={label} />
       <div className="text-sm text-muted-foreground">{label}</div>
     </div>
   );

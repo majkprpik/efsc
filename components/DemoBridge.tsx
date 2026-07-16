@@ -264,6 +264,11 @@ export function DemoBridge() {
   const enabled = params.get("demo") === "1";
   const scenario = params.get("scenario");
 
+  // `run` makes re-running a finished tour a distinct URL. Without it, "start"
+  // from the tour's own end state navigates to the URL already in the bar, which
+  // is a no-op — so boot() would never fire again.
+  const run = params.get("run");
+
   useEffect(() => {
     if (!enabled || !scenario) return;
     const tour = findTour(scenario);
@@ -273,7 +278,7 @@ export function DemoBridge() {
     }
     // Loaded on demand so scenario code never lands in the main bundle.
     tour.load().then((m) => m.boot());
-  }, [enabled, scenario]);
+  }, [enabled, scenario, run]);
 
   if (!enabled) return null;
   return <Bridge />;

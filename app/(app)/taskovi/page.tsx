@@ -1,16 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, PriorityBadge } from "@/components/shared";
 import { ini, shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
-const COLS = [
-  { key: "todo", label: "Za uraditi" },
-  { key: "doing", label: "U tijeku" },
-  { key: "done", label: "Završeno" },
-] as const;
+const COLS = ["todo", "doing", "done"] as const;
 
 export default async function TaskoviPage() {
+  const dict = await getT();
   const supabase = await createClient();
   const { data: tasks } = await supabase
     .from("tasks")
@@ -19,15 +17,15 @@ export default async function TaskoviPage() {
 
   return (
     <>
-      <PageHeader section="taskovi" title="Taskovi" />
+      <PageHeader section="taskovi" title={dict.nav.taskovi} />
       <div className="flex-1 overflow-y-auto p-6">
         <div className="grid gap-4 md:grid-cols-3">
           {COLS.map((col) => {
-            const items = (tasks ?? []).filter((t) => t.status === col.key);
+            const items = (tasks ?? []).filter((t) => t.status === col);
             return (
-              <div key={col.key} className="rounded-lg border bg-card">
+              <div key={col} className="rounded-lg border bg-card">
                 <div className="flex items-center justify-between border-b px-4 py-3">
-                  <span className="text-sm font-medium">{col.label}</span>
+                  <span className="text-sm font-medium">{dict.taskovi.kolone[col]}</span>
                   <Badge variant="secondary">{items.length}</Badge>
                 </div>
                 <div className="space-y-2 p-3">

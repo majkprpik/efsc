@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
 import { ProjektiView, type Projekt, type ProjDoc, type ProjTask } from "./ProjektiView";
 
@@ -7,6 +8,7 @@ export default async function ProjektiPage({
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
+  const t = await getT();
   const sp = await searchParams;
   const supabase = await createClient();
 
@@ -41,7 +43,7 @@ export default async function ProjektiPage({
 
   return (
     <>
-      <PageHeader section="projekti" title="Projekti" />
+      <PageHeader section="projekti" title={t.nav.projekti} />
       <ProjektiView
         projects={projects}
         docs={(docRows ?? []) as ProjDoc[]}

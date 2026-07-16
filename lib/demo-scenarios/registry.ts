@@ -5,6 +5,12 @@
 // launcher menu and the bridge both read from this list, so nothing else needs
 // touching.
 
+/**
+ * Fired on window when a run finishes or is stopped. The tour URL stays in the
+ * address bar either way, so this is the only signal that the run is over.
+ */
+export const TOUR_ENDED = "orbit-tour-ended";
+
 export type TourDef = {
   id: string;
   /** Shown in the launcher menu. */
@@ -36,7 +42,14 @@ export function findTour(id: string | null): TourDef | undefined {
   return TOURS.find((t) => t.id === id);
 }
 
-/** Builds the URL that starts a tour (optionally at a given segment). */
+let runCounter = 0;
+
+/**
+ * Builds the URL that starts a tour (optionally at a given segment).
+ *
+ * Each call bumps `run`, so restarting a tour from its own finished URL is a
+ * real navigation rather than a no-op the router quietly ignores.
+ */
 export function tourUrl(
   tour: TourDef,
   opts: { seg?: number; hud?: boolean } = {},
@@ -44,5 +57,6 @@ export function tourUrl(
   const params = new URLSearchParams({ demo: "1", scenario: tour.id });
   if (opts.seg && opts.seg > 1) params.set("seg", String(opts.seg));
   if (opts.hud === false) params.set("hud", "0");
+  params.set("run", String(++runCounter));
   return `${tour.start}?${params}`;
 }

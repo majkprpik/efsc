@@ -4,15 +4,29 @@ import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useT, useLocale } from "@/lib/i18n/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const SUGGESTIONS: Record<string, string[]> = {
-  natjecaj: ["Sažmi ovaj natječaj", "Koji su ključni rokovi?", "Koji klijenti su prijavljeni?"],
-  klijent: ["Sažmi status klijenta", "Koji projekti su u tijeku?", "Ima li dospjelih računa?"],
-  potencijalni: ["Sažmi ovu priliku", "Koji natječaj je najbolji za njih?", "Predloži sljedeći korak"],
-  projekt: ["Što još fali u dokumentaciji?", "Sažmi status projekta", "Koji su otvoreni zadaci?"],
-  financije: ["Sažmi financije", "Tko kasni s plaćanjem?", "Koliko je ukupno naplaćeno?"],
+const SUGGESTIONS: Record<string, Record<string, string[]>> = {
+  hr: {
+    natjecaj: ["Sažmi ovaj natječaj", "Koji su ključni rokovi?", "Koji klijenti su prijavljeni?"],
+    klijent: ["Sažmi status klijenta", "Koji projekti su u tijeku?", "Ima li dospjelih računa?"],
+    potencijalni: ["Sažmi ovu priliku", "Koji natječaj je najbolji za njih?", "Predloži sljedeći korak"],
+    projekt: ["Što još fali u dokumentaciji?", "Sažmi status projekta", "Koji su otvoreni zadaci?"],
+    financije: ["Sažmi financije", "Tko kasni s plaćanjem?", "Koliko je ukupno naplaćeno?"],
+  },
+  en: {
+    natjecaj: ["Summarise this tender", "What are the key deadlines?", "Which clients applied?"],
+    klijent: ["Summarise this client", "Which projects are running?", "Any overdue invoices?"],
+    potencijalni: ["Summarise this lead", "Which tender suits them best?", "Suggest a next step"],
+    projekt: ["What's still missing in the docs?", "Summarise project status", "What tasks are open?"],
+    financije: ["Summarise the finances", "Who is late paying?", "How much has been invoiced?"],
+  },
+};
+const FALLBACK: Record<string, string[]> = {
+  hr: ["Sažmi ovo", "Što je najvažnije?"],
+  en: ["Summarise this", "What matters most?"],
 };
 
 export function EntityChat({
@@ -24,6 +38,8 @@ export function EntityChat({
   entityId: string | null;
   title: string;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -74,10 +90,10 @@ export function EntityChat({
         body: JSON.stringify({ entityKind, entityId, message: question }),
       });
       if (!res.ok || !res.body) {
-        const err = await res.json().catch(() => ({ error: "Greška." }));
+        const err = await res.json().catch(() => ({ error: t.chat.greska }));
         setMessages((m) => {
           const c = [...m];
-          c[c.length - 1] = { role: "assistant", content: `⚠ ${err.error ?? "Greška."}` };
+          c[c.length - 1] = { role: "assistant", content: `⚠ ${err.error ?? t.chat.greska}` };
           return c;
         });
         return;
@@ -106,7 +122,7 @@ export function EntityChat({
     }
   }
 
-  const suggestions = SUGGESTIONS[entityKind] ?? ["Sažmi ovo", "Što je najvažnije?"];
+  const suggestions = SUGGESTIONS[locale]?.[entityKind] ?? FALLBACK[locale] ?? FALLBACK.hr;
 
   return (
     <div className="flex h-full flex-col">
@@ -115,7 +131,7 @@ export function EntityChat({
           <Sparkles className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold">AI asistent</div>
+          <div className="truncate text-sm font-semibold">{t.chat.naslov}</div>
           <div className="truncate text-xs text-muted-foreground">{title}</div>
         </div>
       </div>
@@ -127,7 +143,7 @@ export function EntityChat({
           </div>
         ) : messages.length === 0 ? (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Pitaj bilo što o ovoj stavci.</p>
+            <p className="text-sm text-muted-foreground">{t.chat.pitajBiloSto}</p>
             <div className="flex flex-col gap-2">
               {suggestions.map((s) => (
                 <button
@@ -167,7 +183,7 @@ export function EntityChat({
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Pitaj AI…"
+          placeholder={t.chat.placeholder}
           disabled={busy}
           className="bg-card"
         />
@@ -199,10 +215,11 @@ export function EntityChatPanel(props: {
 
 /** Mobile-only note shown where the AI panel would be on desktop. */
 export function EntityChatMobileNote() {
+  const t = useT();
   return (
     <div className="flex items-center justify-center gap-2 border-t px-4 py-3 text-xs text-muted-foreground md:hidden">
       <Sparkles className="size-3.5" />
-      AI asistent — još u izradi, otvori na desktopu.
+      {t.chat.uIzradi}
     </div>
   );
 }

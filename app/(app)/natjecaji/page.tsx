@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
 import { NatjecajiView, type ProjRow } from "./NatjecajiView";
 
 export default async function NatjecajiPage() {
+  const t = await getT();
   const supabase = await createClient();
 
   const [{ data: natjecaji }, { data: projRows }, { data: docs }] = await Promise.all([
@@ -29,7 +31,7 @@ export default async function NatjecajiPage() {
 
   return (
     <>
-      <PageHeader section="natjecaji" title="Natječaji" />
+      <PageHeader section="natjecaji" title={t.nav.natjecaji} />
       <NatjecajiView natjecaji={natjecaji ?? []} projects={projects} docs={docs ?? []} />
     </>
   );

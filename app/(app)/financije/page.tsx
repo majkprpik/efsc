@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, Empty } from "@/components/shared";
@@ -6,6 +7,7 @@ import { eur, shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 export default async function FinancijePage() {
+  const t = await getT();
   const supabase = await createClient();
   const { data: fin } = await supabase
     .from("finances")
@@ -21,16 +23,16 @@ export default async function FinancijePage() {
 
   return (
     <>
-      <PageHeader section="financije" title="Financije" />
+      <PageHeader section="financije" title={t.nav.financije} />
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Ukupno prihodi" value={`${eur(ukupnoPrihod)} EUR`} />
-          <Stat label="Naplaćeno" value={`${eur(naplaceno)} EUR`} tone="green" />
-          <Stat label="Troškovi" value={`${eur(trosak)} EUR`} />
-          <Stat label="Dospjelo (kasni)" value={`${eur(dospjelo)} EUR`} tone={dospjelo > 0 ? "red" : undefined} />
+          <Stat label={t.financije.ukupnoPrihodi} value={`${eur(ukupnoPrihod)} EUR`} />
+          <Stat label={t.financije.naplaceno} value={`${eur(naplaceno)} EUR`} tone="green" />
+          <Stat label={t.financije.troskovi} value={`${eur(trosak)} EUR`} />
+          <Stat label={t.financije.dospjelo} value={`${eur(dospjelo)} EUR`} tone={dospjelo > 0 ? "red" : undefined} />
         </div>
 
-        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Transakcije</div>
+        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t.financije.transakcije}</div>
         <Card>
           <CardContent className="p-0">
             {rows.length ? (

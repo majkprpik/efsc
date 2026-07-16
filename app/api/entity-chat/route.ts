@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLocale } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireTeam } from "@/lib/auth-guard";
 import { getOpenAI, CHAT_MODEL } from "@/lib/openai";
@@ -93,8 +94,11 @@ export async function POST(req: Request) {
   const history = (hist ?? []).reverse();
 
   const context = await buildEntityContext(kind, id);
+  // The assistant answers in whatever language the UI is set to.
+  const locale = await getLocale();
+  const lang = locale === "en" ? "engleskom" : "hrvatskom";
   const systemContent =
-    `Ti si asistent u alatu za vođenje EU projekata (ESFC). Odgovaraš na hrvatskom, sažeto i konkretno, ` +
+    `Ti si asistent u alatu za vođenje EU projekata (ESFC). Odgovaraš na ${lang}, sažeto i konkretno, ` +
     `na temelju podataka o ${ENTITY_LABEL[kind]} niže. Ako nešto nije u podacima, reci da nemaš tu informaciju.\n\n` +
     `--- PODACI ---\n${context}`;
 

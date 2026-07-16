@@ -1,10 +1,12 @@
 import { PageHeader, Loading } from "@/components/shared";
+import { getT } from "@/lib/i18n/server";
 
-export default function LoadingPage() {
+export default async function LoadingPage() {
+  const t = await getT();
   return (
     <>
-      <PageHeader section="taskovi" title="Taskovi" />
-      <Loading />
+      <PageHeader section="taskovi" title={t.nav.taskovi} />
+      <Loading label={t.common.ucitavanje} />
     </>
   );
 }

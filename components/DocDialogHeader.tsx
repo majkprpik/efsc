@@ -5,9 +5,11 @@ import { Download, Loader2 } from "lucide-react";
 import { getSignedUrl } from "@/app/(app)/doc-actions";
 import { DocTypeIcon, docLabel } from "@/components/shared";
 import { shortDate } from "@/lib/ui";
+import { useT } from "@/lib/i18n/client";
 
 /** Download button for the dialog header. Resolves its own signed URL. */
 function DownloadButton({ storagePath, fileName }: { storagePath: string; fileName: string }) {
+  const t = useT();
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ function DownloadButton({ storagePath, fileName }: { storagePath: string; fileNa
     <a
       href={url}
       download={fileName}
-      title="Preuzmi"
+      title={t.common.preuzmi}
       className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
     >
       <Download className="size-3.5" />

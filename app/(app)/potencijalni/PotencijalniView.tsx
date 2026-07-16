@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useT, useLocale } from "@/lib/i18n/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Empty } from "@/components/shared";
@@ -35,6 +36,8 @@ export function PotencijalniView({
   notes: PotNote[];
   initialId?: string;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [selectedId, setSelectedId] = useState<string | undefined>(initialId ?? pot[0]?.id);
 
   const selected = pot.find((p) => p.id === selectedId) ?? pot[0] ?? null;
@@ -111,14 +114,14 @@ export function PotencijalniView({
               {selected.saz && (
                 <div className="mb-5 rounded-lg border border-violet-500/20 bg-violet-500/5 p-4">
                   <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-violet-600 dark:text-violet-400">
-                    <Sparkles className="size-3.5" /> AI sažetak ideje
+                    <Sparkles className="size-3.5" /> {t.potencijalni.aiSazetak}
                   </div>
                   <p className="text-sm text-muted-foreground">{selected.saz}</p>
                 </div>
               )}
 
               <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Bilješke
+                {t.potencijalni.biljeske}
               </div>
               <Card>
                 <CardContent className="space-y-3 p-4">
@@ -147,7 +150,7 @@ export function PotencijalniView({
                       </div>
                     ))
                   ) : (
-                    <Empty>Nema bilješki</Empty>
+                    <Empty>{t.potencijalni.nemaBiljeski}</Empty>
                   )}
                 </CardContent>
               </Card>

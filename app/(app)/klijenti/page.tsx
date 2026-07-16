@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/shared";
 import {
   KlijentiView,
@@ -13,6 +14,7 @@ export default async function KlijentiPage({
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
+  const t = await getT();
   const sp = await searchParams;
   const supabase = await createClient();
 
@@ -80,7 +82,7 @@ export default async function KlijentiPage({
 
   return (
     <>
-      <PageHeader section="klijenti" title="Klijenti" />
+      <PageHeader section="klijenti" title={t.nav.klijenti} />
       <KlijentiView
         clients={clients}
         projects={projects}
