@@ -4,14 +4,9 @@ import { useRef, useState } from "react";
 import { Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/lib/i18n/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
-
-const SUGGESTIONS = [
-  "Sažmi ovaj dokument",
-  "Koji su ključni rokovi?",
-  "Koji su uvjeti prihvatljivosti?",
-];
 
 export function DocChat({
   docKind,
@@ -24,6 +19,7 @@ export function DocChat({
   storagePath: string;
   fileName: string;
 }) {
+  const t = useT();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,10 +47,10 @@ export function DocChat({
       });
 
       if (!res.ok || !res.body) {
-        const err = await res.json().catch(() => ({ error: "Greška." }));
+        const err = await res.json().catch(() => ({ error: t.chat.greska }));
         setMessages((m) => {
           const copy = [...m];
-          copy[copy.length - 1] = { role: "assistant", content: `⚠ ${err.error ?? "Greška."}` };
+          copy[copy.length - 1] = { role: "assistant", content: `⚠ ${err.error ?? t.chat.greska}` };
           return copy;
         });
         return;
@@ -90,17 +86,19 @@ export function DocChat({
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b px-4 py-3">
         <Sparkles className="size-4 text-primary" />
-        <div className="text-sm font-medium">AI o dokumentu</div>
+        <div className="text-sm font-medium">{t.chat.oDokumentu}</div>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Pitaj bilo što o dokumentu <span className="font-medium text-foreground">{fileName}</span>.
+              {t.chat.pitajODokumentu.split("{file}")[0]}
+              <span className="font-medium text-foreground">{fileName}</span>
+              {t.chat.pitajODokumentu.split("{file}")[1]}
             </p>
             <div className="flex flex-col gap-2">
-              {SUGGESTIONS.map((s) => (
+              {t.chat.prijedloziDokument.map((s) => (
                 <button
                   key={s}
                   onClick={() => send(s)}

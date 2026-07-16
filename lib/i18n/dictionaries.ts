@@ -88,7 +88,7 @@ const hr = {
       naslov: "Praćenje izvora",
       prazno: "Nema nalaza s izvora",
       zadnjaProvjera: "Zadnja provjera",
-      novihNalaza: "novih nalaza",
+      novihNalaza: { one: "novi nalaz", few: "nova nalaza", many: "novih nalaza" },
       provjeriSad: "Provjeri sad",
       otvoriIzvornik: "Otvori izvornik",
       vrste: {
@@ -110,10 +110,20 @@ const hr = {
     ispitajKrozAi: "Sadržaj možeš ispitati kroz AI chat desno ili preuzeti datoteku.",
     neMoguUcitati: "Ne mogu učitati dokument.",
     praznaDatoteka: "Prazna datoteka.",
+    nepodrzanTip: "Nepodržan tip datoteke.",
+    neMoguDohvatiti: "Ne mogu dohvatiti datoteku.",
     tipovi: { pdf: "PDF", docx: "Word", xlsx: "Excel", txt: "Tekst", csv: "CSV", slika: "Slika" } as Record<string, string>,
   },
   chat: {
     naslov: "AI asistent",
+    oDokumentu: "AI o dokumentu",
+    /** {file} → naziv datoteke */
+    pitajODokumentu: "Pitaj bilo što o dokumentu {file}.",
+    prijedloziDokument: [
+      "Sažmi ovaj dokument",
+      "Koji su ključni rokovi?",
+      "Koji su uvjeti prihvatljivosti?",
+    ],
     pitajBiloSto: "Pitaj bilo što o ovoj stavci.",
     placeholder: "Pitaj AI…",
     uIzradi: "AI asistent — još u izradi, otvori na desktopu.",
@@ -254,7 +264,7 @@ const en: typeof hr = {
       naslov: "Source monitoring",
       prazno: "No findings from sources",
       zadnjaProvjera: "Last checked",
-      novihNalaza: "new findings",
+      novihNalaza: { one: "new finding", few: "new findings", many: "new findings" },
       provjeriSad: "Check now",
       otvoriIzvornik: "Open source",
       vrste: {
@@ -276,10 +286,19 @@ const en: typeof hr = {
     ispitajKrozAi: "You can ask the AI about it on the right, or download the file.",
     neMoguUcitati: "Could not load the document.",
     praznaDatoteka: "Empty file.",
+    nepodrzanTip: "Unsupported file type.",
+    neMoguDohvatiti: "Could not fetch the file.",
     tipovi: { pdf: "PDF", docx: "Word", xlsx: "Excel", txt: "Text", csv: "CSV", slika: "Image" },
   },
   chat: {
     naslov: "AI assistant",
+    oDokumentu: "AI about this document",
+    pitajODokumentu: "Ask anything about {file}.",
+    prijedloziDokument: [
+      "Summarise this document",
+      "What are the key deadlines?",
+      "What are the eligibility criteria?",
+    ],
     pitajBiloSto: "Ask anything about this item.",
     placeholder: "Ask the AI…",
     uIzradi: "AI assistant — still in progress, open on desktop.",
@@ -349,6 +368,20 @@ export type Dictionary = typeof hr;
 
 export function getDictionary(locale: Locale): Dictionary {
   return dictionaries[locale] ?? dictionaries[DEFAULT_LOCALE];
+}
+
+export type PluralForms = { one: string; few: string; many: string };
+
+/**
+ * Croatian needs three forms — 1 nalaz / 2 nalaza / 5 nalaza — and the rule
+ * isn't "n === 1": 21 takes `one`, 11 takes `many`. Intl knows the rules, so
+ * we don't hand-roll them. English maps its two forms onto the same shape.
+ */
+export function plural(locale: Locale, n: number, forms: PluralForms): string {
+  const rule = new Intl.PluralRules(locale).select(n);
+  if (rule === "one") return forms.one;
+  if (rule === "few") return forms.few;
+  return forms.many;
 }
 
 /**

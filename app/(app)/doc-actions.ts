@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 const BUCKET = "orbit-docs";
 
@@ -41,11 +42,12 @@ function sanitize(html: string): string {
  * content was always readable, just never shown.
  */
 export async function getDocPreview(storagePath: string, fileName: string): Promise<DocPreview> {
+  const t = await getT();
   const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
   const supabase = await createClient();
   const { data, error } = await supabase.storage.from(BUCKET).download(storagePath);
   if (error || !data) {
-    return { kind: "error", message: error?.message ?? "Ne mogu dohvatiti datoteku." };
+    return { kind: "error", message: error?.message ?? t.dokument.neMoguDohvatiti };
   }
   const buf = Buffer.from(await data.arrayBuffer());
 
@@ -73,5 +75,5 @@ export async function getDocPreview(storagePath: string, fileName: string): Prom
     return { kind: "error", message: (e as Error).message };
   }
 
-  return { kind: "error", message: "Nepodržan tip datoteke." };
+  return { kind: "error", message: t.dokument.nepodrzanTip };
 }
