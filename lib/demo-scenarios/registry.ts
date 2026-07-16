@@ -36,6 +36,42 @@ export const TOURS: TourDef[] = [
     seconds: 61,
     load: () => import("./welcome"),
   },
+  {
+    id: "klijenti",
+    label: "Klijenti",
+    blurb: "The list, tags as filters, and everything one client touches.",
+    start: "/klijenti",
+    segments: 2,
+    seconds: 40,
+    load: () => import("./klijenti"),
+  },
+  {
+    id: "potencijalni",
+    label: "Potencijalni",
+    blurb: "Leads by last contact, the AI summary, and the notes thread.",
+    start: "/potencijalni",
+    segments: 2,
+    seconds: 34,
+    load: () => import("./potencijalni"),
+  },
+  {
+    id: "rad",
+    label: "Taskovi i rokovi",
+    blurb: "The task board, and deadlines colored by how close they are.",
+    start: "/taskovi",
+    segments: 2,
+    seconds: 39,
+    load: () => import("./rad"),
+  },
+  {
+    id: "financije",
+    label: "Financije",
+    blurb: "The four totals, and the transactions behind them.",
+    start: "/financije",
+    segments: 2,
+    seconds: 37,
+    load: () => import("./financije"),
+  },
 ];
 
 export function findTour(id: string | null): TourDef | undefined {

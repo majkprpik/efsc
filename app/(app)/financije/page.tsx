@@ -25,15 +25,15 @@ export default async function FinancijePage() {
     <>
       <PageHeader section="financije" title={t.nav.financije} />
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label={t.financije.ukupnoPrihodi} value={`${eur(ukupnoPrihod)} EUR`} />
-          <Stat label={t.financije.naplaceno} value={`${eur(naplaceno)} EUR`} tone="green" />
-          <Stat label={t.financije.troskovi} value={`${eur(trosak)} EUR`} />
-          <Stat label={t.financije.dospjelo} value={`${eur(dospjelo)} EUR`} tone={dospjelo > 0 ? "red" : undefined} />
+        <div data-tour="fin-stat-row" className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Stat tour="fin-prihodi" label={t.financije.ukupnoPrihodi} value={`${eur(ukupnoPrihod)} EUR`} />
+          <Stat tour="fin-naplaceno" label={t.financije.naplaceno} value={`${eur(naplaceno)} EUR`} tone="green" />
+          <Stat tour="fin-troskovi" label={t.financije.troskovi} value={`${eur(trosak)} EUR`} />
+          <Stat tour="fin-dospjelo" label={t.financije.dospjelo} value={`${eur(dospjelo)} EUR`} tone={dospjelo > 0 ? "red" : undefined} />
         </div>
 
         <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t.financije.transakcije}</div>
-        <Card>
+        <Card data-tour="fin-transakcije">
           <CardContent className="p-0">
             {rows.length ? (
               rows.map((f, i) => {
@@ -67,9 +67,9 @@ export default async function FinancijePage() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "green" | "red" }) {
+function Stat({ label, value, tone, tour }: { label: string; value: string; tone?: "green" | "red"; tour?: string }) {
   return (
-    <Card>
+    <Card data-tour={tour}>
       <CardContent className="p-6">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
         <div className={cn("mt-1 text-2xl font-semibold tabular-nums", tone === "green" && "text-emerald-600", tone === "red" && "text-red-600")}>

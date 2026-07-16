@@ -19,21 +19,25 @@ export default async function TaskoviPage() {
     <>
       <PageHeader section="taskovi" title={dict.nav.taskovi} />
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div data-tour="task-board" className="grid gap-4 md:grid-cols-3">
           {COLS.map((col) => {
             const items = (tasks ?? []).filter((t) => t.status === col);
             return (
-              <div key={col} className="rounded-lg border bg-card">
+              <div key={col} data-tour={`task-col-${col}`} className="rounded-lg border bg-card">
                 <div className="flex items-center justify-between border-b px-4 py-3">
                   <span className="text-sm font-medium">{dict.taskovi.kolone[col]}</span>
                   <Badge variant="secondary">{items.length}</Badge>
                 </div>
                 <div className="space-y-2 p-3">
                   {items.length ? (
-                    items.map((t) => {
+                    items.map((t, i) => {
                       const proj = t.projects as { naziv: string } | null;
                       return (
-                        <div key={t.id} className="rounded-md border bg-background p-3">
+                        <div
+                          key={t.id}
+                          data-tour={`task-card-${col}-${i}`}
+                          className="rounded-md border bg-background p-3"
+                        >
                           <div className={cn("text-sm font-medium", t.status === "done" && "text-muted-foreground line-through")}>
                             {t.title}
                           </div>

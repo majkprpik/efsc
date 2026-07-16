@@ -125,4 +125,8 @@ export function TourLauncher() {
 // humans picking a starting point, not something the scenarios themselves use.
 const SEGMENT_LABELS: Record<string, string[]> = {
   welcome: ["Dashboard", "Natječaji", "Projekti"],
+  klijenti: ["Lista i tagovi", "Kartica klijenta"],
+  potencijalni: ["Lista", "AI sažetak i bilješke"],
+  rad: ["Taskovi", "Rokovi"],
+  financije: ["Brojke", "Transakcije"],
 };

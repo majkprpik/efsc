@@ -52,11 +52,12 @@ export function PotencijalniView({
         {/* LIST */}
         <div className="flex min-h-0 flex-col overflow-y-auto border-r">
           {pot.length ? (
-            pot.map((p) => {
+            pot.map((p, i) => {
               const [bg, fg] = cp(p.naziv);
               return (
                 <button
                   key={p.id}
+                  data-tour={`pot-row-${i}`}
                   onClick={() => setSelectedId(p.id)}
                   className={cn(
                     "flex items-center gap-3 border-b px-4 py-3 text-left hover:bg-muted/50",
@@ -106,13 +107,13 @@ export function PotencijalniView({
                 <Badge className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400">potencijalni</Badge>
               </div>
 
-              <div className="mb-5 grid grid-cols-2 gap-3">
+              <div data-tour="pot-info" className="mb-5 grid grid-cols-2 gap-3">
                 <Info label="Zadnji kontakt" value={shortDate(selected.zadnji_kontakt)} />
                 <Info label="Unio/la" value={selected.unio_name ?? "—"} />
               </div>
 
               {selected.saz && (
-                <div className="mb-5 rounded-lg border border-violet-500/20 bg-violet-500/5 p-4">
+                <div data-tour="pot-saz" className="mb-5 rounded-lg border border-violet-500/20 bg-violet-500/5 p-4">
                   <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-violet-600 dark:text-violet-400">
                     <Sparkles className="size-3.5" /> {t.potencijalni.aiSazetak}
                   </div>
@@ -120,6 +121,7 @@ export function PotencijalniView({
                 </div>
               )}
 
+              <div data-tour="pot-biljeske">
               <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t.potencijalni.biljeske}
               </div>
@@ -154,6 +156,7 @@ export function PotencijalniView({
                   )}
                 </CardContent>
               </Card>
+              </div>
             </div>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">

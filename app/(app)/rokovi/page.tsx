@@ -26,7 +26,7 @@ export default async function RokoviPage() {
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-3xl">
           {/* today banner */}
-          <div className="mb-6 flex items-baseline gap-5 rounded-lg border bg-card px-6 py-5">
+          <div data-tour="rok-banner" className="mb-6 flex items-baseline gap-5 rounded-lg border bg-card px-6 py-5">
             <div className="text-5xl font-semibold tabular-nums">{now.getDate()}</div>
             <div>
               <div className="text-base font-medium">{dateLine}</div>
@@ -35,7 +35,7 @@ export default async function RokoviPage() {
           </div>
 
           <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Svi rokovi</div>
-          <Card>
+          <Card data-tour="rok-list">
             <CardContent className="p-0">
               {rokovi?.length ? (
                 rokovi.map((r, i) => {
@@ -48,7 +48,7 @@ export default async function RokoviPage() {
                     past: "text-muted-foreground/60",
                   }[urg];
                   return (
-                    <div key={r.id} className={cn("flex items-center gap-3 px-4 py-3", i > 0 && "border-t")}>
+                    <div key={r.id} data-tour={`rok-row-${i}`} className={cn("flex items-center gap-3 px-4 py-3", i > 0 && "border-t")}>
                       <span className={cn("min-w-[48px] text-sm font-medium", dateCls)}>{shortDate(r.datum)}</span>
                       <span className="min-w-0 flex-1 truncate text-sm">{r.text}</span>
                       <span className="text-xs text-muted-foreground">

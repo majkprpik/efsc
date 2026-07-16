@@ -85,22 +85,23 @@ export function KlijentiView({
       <div className="grid min-h-0 flex-1 grid-cols-[300px_1fr] overflow-hidden">
         {/* LIST */}
         <div className="flex min-h-0 flex-col overflow-y-auto border-r">
-          <div className="flex flex-wrap gap-1.5 border-b p-3">
-            <button onClick={() => setTag(null)}>
+          <div data-tour="klijent-tags" className="flex flex-wrap gap-1.5 border-b p-3">
+            <button data-tour="klijent-tag-svi" onClick={() => setTag(null)}>
               <Badge variant={!tag ? "default" : "outline"} className="cursor-pointer">svi</Badge>
             </button>
-            {allTags.map((t) => (
-              <button key={t} onClick={() => setTag(t)}>
+            {allTags.map((t, i) => (
+              <button key={t} data-tour={`klijent-tag-${i}`} onClick={() => setTag(t)}>
                 <Badge variant={tag === t ? "default" : "outline"} className="cursor-pointer">{t}</Badge>
               </button>
             ))}
           </div>
           {filtered.length ? (
-            filtered.map((c) => {
+            filtered.map((c, i) => {
               const [bg, fg] = cp(c.naziv);
               return (
                 <button
                   key={c.id}
+                  data-tour={`klijent-row-${i}`}
                   onClick={() => setSelectedId(c.id)}
                   className={cn(
                     "flex items-center gap-3 border-b px-4 py-3 text-left hover:bg-muted/50",
@@ -132,7 +133,7 @@ export function KlijentiView({
         <div className="min-h-0 overflow-y-auto p-6">
           {selected ? (
             <div className="mx-auto max-w-3xl">
-              <div className="mb-5 flex items-start gap-4 border-b pb-5">
+              <div data-tour="klijent-header" className="mb-5 flex items-start gap-4 border-b pb-5">
                 <span
                   className="flex size-12 shrink-0 items-center justify-center rounded-xl text-base font-medium"
                   style={{ background: cp(selected.naziv)[0], color: cp(selected.naziv)[1] }}
@@ -164,7 +165,7 @@ export function KlijentiView({
                 </div>
               )}
 
-              <Section title={t.klijenti.projektiSekcija}>
+              <Section tour="klijent-projekti" title={t.klijenti.projektiSekcija}>
                 {selProjects.length ? (
                   selProjects.map((p, i) => (
                     <Link key={p.id} href={`/projekti?id=${p.id}`} className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50", i > 0 && "border-t")}>
@@ -182,7 +183,7 @@ export function KlijentiView({
               </Section>
 
               {selNatjecaji.length > 0 && (
-                <Section title={t.klijenti.natjecajiSekcija}>
+                <Section tour="klijent-natjecaji" title={t.klijenti.natjecajiSekcija}>
                   {selNatjecaji.map((n, i) => (
                     <Link key={n.id} href={`/natjecaji?id=${n.id}`} className={cn("flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50", i > 0 && "border-t")}>
                       <div className="min-w-0 flex-1">
@@ -196,7 +197,7 @@ export function KlijentiView({
               )}
 
               {selFinances.length > 0 && (
-                <Section title="Financije">
+                <Section tour="klijent-financije" title="Financije">
                   {selFinances.map((f, i) => (
                     <div key={f.id} className={cn("flex items-center gap-3 px-4 py-2.5", i > 0 && "border-t")}>
                       <div className="min-w-0 flex-1">
@@ -226,9 +227,17 @@ export function KlijentiView({
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+  tour,
+}: {
+  title: string;
+  children: React.ReactNode;
+  tour?: string;
+}) {
   return (
-    <div className="mb-5">
+    <div data-tour={tour} className="mb-5">
       <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</div>
       <Card>
         <CardContent className="p-0">{children}</CardContent>
