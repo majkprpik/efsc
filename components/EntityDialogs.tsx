@@ -106,7 +106,7 @@ export function AddClientButton({ status = "active" }: { status?: "active" | "po
       <Field id="c-phone" name="phone" label={t.klijenti.telefon} />
       {lead && (
         <div className="space-y-1.5">
-          <Label htmlFor="c-saz">{t.potencijalni.aiSazetak}</Label>
+          <Label htmlFor="c-saz">{t.potencijalni.sazUnos}</Label>
           <textarea
             id="c-saz"
             name="saz"
