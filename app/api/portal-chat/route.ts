@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLocale } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
-import { getPortalContext, getTeamPortalContext } from "@/app/portal/actions";
+import { getPortalContext } from "@/app/portal/actions";
 import { getOpenAI, CHAT_MODEL } from "@/lib/openai";
 import { buildPortalContext } from "@/lib/portal-context";
 import type { ChatCompletionMessageParam } from "openai/resources/index";
@@ -18,68 +18,19 @@ const MAX_HISTORY = 30;
  */
 const ENTITY_KIND = "portal";
 
-/**
- * Čiji je ovo razgovor: klijentov vlastiti, ili ga član tima gleda iz pregleda.
- *
- * `?clientId=` prihvaćamo samo od tima — klijentu se ignorira, pa mu podmetnuti
- * ID ne otvara tuđi razgovor.
- */
-async function resolve(req: Request) {
-  const ctx = await getPortalContext();
-  if (ctx) return { clientId: ctx.client.id, profile: ctx.profile, asTeam: false };
-
-  const clientId = new URL(req.url).searchParams.get("clientId");
-  if (!clientId) return null;
-
-  const team = await getTeamPortalContext(clientId);
-  if (!team) return null;
-  return { clientId: team.client.id, profile: team.profile, asTeam: true };
-}
-
-export async function GET(req: Request) {
+export async function GET() {
   const supabase = await createClient();
-  const who = await resolve(req);
-  if (!who) return NextResponse.json({ messages: [] });
+  const ctx = await getPortalContext();
+  if (!ctx) return NextResponse.json({ messages: [] });
 
   const { data } = await supabase
     .from("chat_messages")
     .select("role, content, author_kind, author_name")
     .eq("entity_kind", ENTITY_KIND)
-    .eq("entity_id", who.clientId)
+    .eq("entity_id", ctx.client.id)
     .order("created_at", { ascending: true });
 
   return NextResponse.json({ messages: data ?? [] });
-}
-
-/**
- * Član tima piše u klijentov portal-chat.
- *
- * Ne ide AI-u: asistent odgovara klijentu na njegova pitanja, a ovo je poruka
- * tima klijentu. Zato se samo upiše u razgovor, s imenom pošiljatelja koje
- * klijent vidi — inače bi mu se u vlastitom chatu pojavio tekst koji nije napisao.
- */
-export async function PUT(req: Request) {
-  const supabase = await createClient();
-  const who = await resolve(req);
-  if (!who?.asTeam) return NextResponse.json({ error: "Neautoriziran." }, { status: 401 });
-
-  const { message } = (await req.json()) as { message?: string };
-  if (!message?.trim()) {
-    return NextResponse.json({ error: "Nedostaje poruka." }, { status: 400 });
-  }
-
-  const { error } = await supabase.from("chat_messages").insert({
-    entity_kind: ENTITY_KIND,
-    entity_id: who.clientId,
-    role: "user",
-    content: message.trim(),
-    author_id: who.profile.id ?? null,
-    author_name: who.profile.name || who.profile.email,
-    author_kind: "team",
-  });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ ok: true });
 }
 
 export async function POST(req: Request) {

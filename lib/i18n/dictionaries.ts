@@ -300,10 +300,6 @@ const hr = {
     chatPodnaslov: "Pitaj o dokumentaciji",
     chatUvod: "Ne znaš što je neki dokument ili gdje ga nabaviti? Pitaj.",
     chatPlaceholder: "Napiši pitanje…",
-    chatPodnaslovTim: "Razgovor klijenta — pišeš u svoje ime",
-    chatUvodTim:
-      "Klijent još nije ništa pitao. Što napišeš ovdje vidi on, potpisano tvojim imenom.",
-    chatPlaceholderTim: "Napiši poruku klijentu…",
     /** {name} → ime osobe iz tima */
     chatOdTima: "{name} (Orbit)",
     chatOdTimaBezImena: "Orbit tim",
@@ -598,10 +594,6 @@ const en: typeof hr = {
     chatPodnaslov: "Ask about the documents",
     chatUvod: "Not sure what a document is or where to get it? Just ask.",
     chatPlaceholder: "Type your question…",
-    chatPodnaslovTim: "Client's conversation — you post as yourself",
-    chatUvodTim:
-      "The client hasn't asked anything yet. What you write here is visible to them, signed with your name.",
-    chatPlaceholderTim: "Write a message to the client…",
     /** {name} → team member name */
     chatOdTima: "{name} (Orbit)",
     chatOdTimaBezImena: "Orbit team",

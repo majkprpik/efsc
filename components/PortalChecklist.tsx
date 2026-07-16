@@ -28,17 +28,17 @@ export type ChecklistItem = {
  * (/portal-admin/pregled), pa razlike moraju ostati male — inače bi se prikazi
  * razišli čim se jedan promijeni.
  *
- * `asTeam` je clientId kad ovo gleda netko iz tima: upload tada ide u klijentovo
- * ime, ali se zapisuje pod njegovim imenom. Predaju dokumentacije tim ne dobiva
- * — to je klijentova izjava da je gotov i nitko je ne može dati umjesto njega.
+ * `preview` je true kad ovo gleda netko iz tima kroz /portal-admin/pregled:
+ * izgled je isti kao klijentov, ali su akcije (upload, predaja) neaktivne — to
+ * je prozor za gledanje, ne mjesto s kojeg tim radi u klijentovo ime.
  */
 export function PortalChecklist({
   items,
-  asTeam = null,
+  preview = false,
   submittedAt = null,
 }: {
   items: ChecklistItem[];
-  asTeam?: string | null;
+  preview?: boolean;
   submittedAt?: string | null;
 }) {
   const t = useT();
@@ -63,12 +63,11 @@ export function PortalChecklist({
         </Card>
       )}
 
-      {!asTeam && (
-        <PortalSubmit
-          submittedAt={submittedAt}
-          allDone={required.length > 0 && done === required.length}
-        />
-      )}
+      <PortalSubmit
+        submittedAt={submittedAt}
+        allDone={required.length > 0 && done === required.length}
+        preview={preview}
+      />
 
       {items.length === 0 ? (
         <Card>
@@ -109,7 +108,7 @@ export function PortalChecklist({
 
                   <PortalUploadButton
                     requestId={item.id}
-                    asTeam={asTeam}
+                    preview={preview}
                     label={item.uploaded ? t.portal.zamijeni : t.portal.uploadaj}
                     variant={item.uploaded ? "outline" : "default"}
                   />
@@ -140,7 +139,7 @@ export function PortalChecklist({
         </>
       )}
 
-      <PortalDropzone asTeam={asTeam} />
+      <PortalDropzone preview={preview} />
     </>
   );
 }

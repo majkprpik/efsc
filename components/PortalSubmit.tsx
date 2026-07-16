@@ -16,13 +16,19 @@ import { useT, useLocale } from "@/lib/i18n/client";
 export function PortalSubmit({
   submittedAt,
   allDone,
+  preview = false,
 }: {
   submittedAt: string | null;
   allDone: boolean;
+  preview?: boolean;
 }) {
   const t = useT();
   const locale = useLocale();
   const [pending, start] = useTransition();
+
+  // U "Vidi kao klijent" pregledu tim ne smije predati dokumentaciju umjesto
+  // klijenta — predaja je klijentova izjava. Prikaz statusa (submittedAt) ostaje.
+  if (preview && !submittedAt) return null;
 
   if (submittedAt) {
     const date = new Date(submittedAt).toLocaleDateString(locale, {
@@ -42,21 +48,23 @@ export function PortalSubmit({
             </p>
             <p className="mt-1.5 text-xs text-muted-foreground">{t.portal.predanoMozesJos}</p>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={pending}
-            onClick={() =>
-              start(async () => {
-                const res = await unsubmitPortal();
-                if (res?.error) toast.error(res.error);
-                else toast.success(t.portal.predajaPonistena);
-              })
-            }
-          >
-            {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            {t.portal.ponistiPredaju}
-          </Button>
+          {!preview && (
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={pending}
+              onClick={() =>
+                start(async () => {
+                  const res = await unsubmitPortal();
+                  if (res?.error) toast.error(res.error);
+                  else toast.success(t.portal.predajaPonistena);
+                })
+              }
+            >
+              {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              {t.portal.ponistiPredaju}
+            </Button>
+          )}
         </div>
       </div>
     );

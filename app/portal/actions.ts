@@ -43,62 +43,10 @@ export async function getPortalContext() {
   return { profile, client, items: items ?? [] };
 }
 
-/**
- * Klijent i njegova checklista, ali dohvaćeno za člana tima.
- *
- * Isti oblik kao getPortalContext, pa ga upload može gutati bez razlike —
- * razlika je samo tko smije: ovdje mora biti tim, tamo baš taj klijent.
- */
-export async function getTeamPortalContext(clientId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  if (!claims) return null;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, name, email, client_id, role")
-    .eq("id", claims.sub)
-    .single();
-
-  // Klijent ne smije ovuda ni na svoj portal: tuđi clientId bi mu inače dao
-  // upload u tuđe ime. Za klijenta postoji getPortalContext.
-  if (!profile || profile.client_id) return null;
-
-  const { data: client } = await supabase
-    .from("clients")
-    .select("id, naziv, folder_path, submitted_at")
-    .eq("id", clientId)
-    .single();
-
-  if (!client) return null;
-
-  const { data: items } = await supabase
-    .from("portal_requests")
-    .select(
-      "id, name, description, required, uploaded, uploaded_at, original_name, ai_status, ai_note, uploaded_by, uploaded_by_name, sort",
-    )
-    .eq("client_id", client.id)
-    .order("sort")
-    .order("created_at");
-
-  return { profile, client, items: items ?? [] };
-}
-
 type PortalCtx = NonNullable<Awaited<ReturnType<typeof getPortalContext>>>;
 
-/**
- * Jezgra uploada, zajednička klijentu i timu.
- *
- * `by` je jedina razlika i ide ravno u zapis: dokument koji je poslao tim mora
- * se dati razlikovati od klijentovog i kasnije, kad se nitko ne sjeća tko je
- * što slao. Portal tu oznaku i pokazuje klijentu.
- */
-async function doUpload(
-  ctx: PortalCtx,
-  formData: FormData,
-  by: { kind: "client" } | { kind: "team"; name: string },
-) {
+/** Jezgra uploada za klijenta. */
+async function doUpload(ctx: PortalCtx, formData: FormData) {
   const supabase = await createClient();
   const t = await getT();
 
@@ -156,10 +104,6 @@ async function doUpload(
   }
 
   const now = new Date().toISOString();
-  const by_ = {
-    uploaded_by: by.kind,
-    uploaded_by_name: by.kind === "team" ? by.name : null,
-  };
 
   if (targetId) {
     await supabase
@@ -171,7 +115,8 @@ async function doUpload(
         original_name: file.name,
         ai_status: aiStatus,
         ai_note: aiNote,
-        ...by_,
+        uploaded_by: "client",
+        uploaded_by_name: null,
       })
       .eq("id", targetId)
       .eq("client_id", ctx.client.id);
@@ -188,7 +133,8 @@ async function doUpload(
       ai_status: aiStatus,
       ai_note: aiNote,
       sort: 999,
-      ...by_,
+      uploaded_by: "client",
+      uploaded_by_name: null,
     });
   }
 
@@ -228,25 +174,7 @@ export async function uploadPortalDoc(formData: FormData) {
   const ctx = await getPortalContext();
   if (!ctx) return { error: t.portal.nemasPristup };
 
-  return doUpload(ctx, formData, { kind: "client" });
-}
-
-/**
- * Tim uploada dokument u klijentovo ime — klijent pošalje papire mailom, mi ih
- * ubacimo umjesto njega.
- *
- * Zapis nosi tko je stvarno slao; portal to klijentu i pokaže. Bez toga bi mu
- * pisalo "dostavljeno" za nešto što nikad nije poslao.
- */
-export async function uploadPortalDocAsTeam(clientId: string, formData: FormData) {
-  const t = await getT();
-  const ctx = await getTeamPortalContext(clientId);
-  if (!ctx) return { error: t.portal.nemasPristup };
-
-  return doUpload(ctx, formData, {
-    kind: "team",
-    name: ctx.profile.name || ctx.profile.email,
-  });
+  return doUpload(ctx, formData);
 }
 
 /**

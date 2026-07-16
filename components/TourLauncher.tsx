@@ -16,10 +16,12 @@ import { PlayCircle, Square, ChevronRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TOUR_ENDED, TOURS, findTour, tourUrl } from "@/lib/demo-scenarios/registry";
@@ -83,40 +85,47 @@ export function TourLauncher() {
           </button>
         }
       />
-      <DropdownMenuContent side="bottom" align="end" className="w-64">
-        {/* Every DropdownMenuLabel is a Base UI Menu.GroupLabel and throws
-            unless it sits inside a Menu.Group — a plain wrapper is not enough. */}
+      <DropdownMenuContent side="bottom" align="end" className="w-56">
+        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+          Odaberi tutorial
+        </DropdownMenuLabel>
+        {/* One row per tour; the detail (blurb, start, segment jumps) lives in a
+            submenu so the panel stays short instead of stacking every tour's
+            full option list into one scrollless box. */}
         {TOURS.map((tour) => (
-          <DropdownMenuGroup key={tour.id}>
-            <DropdownMenuLabel className="flex items-baseline justify-between gap-2">
-              <span>{tour.label}</span>
+          <DropdownMenuSub key={tour.id}>
+            <DropdownMenuSubTrigger className="flex items-center gap-2">
+              <PlayCircle className="size-4 shrink-0 opacity-60" />
+              <span className="flex-1">{tour.label}</span>
               <span className="text-xs font-normal text-muted-foreground">
                 {tour.seconds}s
               </span>
-            </DropdownMenuLabel>
-            <div className="px-1.5 pb-1.5 text-xs text-muted-foreground">
-              {tour.blurb}
-            </div>
-            <DropdownMenuItem onClick={() => router.push(tourUrl(tour))}>
-              <PlayCircle className="size-4" />
-              Pokreni od početka
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-              Skoči na dio
-            </DropdownMenuLabel>
-            {Array.from({ length: tour.segments }, (_, i) => i + 1).map((seg) => (
-              <DropdownMenuItem
-                key={seg}
-                onClick={() => router.push(tourUrl(tour, { seg }))}
-              >
-                <span className="w-4 text-center text-xs tabular-nums text-muted-foreground">
-                  {seg}
-                </span>
-                {SEGMENT_LABELS[tour.id]?.[seg - 1] ?? `Dio ${seg}`}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="w-56">
+              <div className="px-1.5 pb-1.5 pt-1 text-xs text-muted-foreground">
+                {tour.blurb}
+              </div>
+              <DropdownMenuItem onClick={() => router.push(tourUrl(tour))}>
+                <PlayCircle className="size-4" />
+                Pokreni od početka
               </DropdownMenuItem>
-            ))}
-          </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                Skoči na dio
+              </DropdownMenuLabel>
+              {Array.from({ length: tour.segments }, (_, i) => i + 1).map((seg) => (
+                <DropdownMenuItem
+                  key={seg}
+                  onClick={() => router.push(tourUrl(tour, { seg }))}
+                >
+                  <span className="w-4 text-center text-xs tabular-nums text-muted-foreground">
+                    {seg}
+                  </span>
+                  {SEGMENT_LABELS[tour.id]?.[seg - 1] ?? `Dio ${seg}`}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

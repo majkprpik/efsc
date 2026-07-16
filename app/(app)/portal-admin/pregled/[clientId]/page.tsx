@@ -5,14 +5,12 @@ import { PortalChecklist, type ChecklistItem } from "@/components/PortalChecklis
 import { PortalChatPanel, PortalChatMobileNote } from "@/components/PortalChat";
 
 /**
- * Timski pregled: klijentov portal onakav kakav ga on vidi, i s uploadom.
+ * Timski pregled: klijentov portal točno onakav kakav ga on vidi.
  *
- * Upload radi jer klijenti papire često pošalju mailom pa ih netko iz tima ubaci
- * umjesto njih. Ono što ne radi je predaja dokumentacije — to je klijentova
- * izjava da je gotov i nitko je ne može dati u njegovo ime.
- *
- * Svaki upload odavde nosi ime osobe koja ga je poslala i klijent tu oznaku vidi
- * na svom portalu; ekran je vjeran, zapis nije lažan.
+ * Ekran je namjerno vjeran kopiji — isti checklist, isti chat, iste poruke koje
+ * klijent čita. Nema timskih akcija (upload ni chat u ime klijenta) jer bi
+ * njihove poruke ("potpisano tvojim imenom") ovdje krivo sugerirale da tu piše
+ * klijent. Ovo je prozor kroz koji se gleda, ne mjesto s kojeg se radi.
  */
 export default async function PortalPreviewPage({
   params,
@@ -45,8 +43,8 @@ export default async function PortalPreviewPage({
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-muted/30">
       <div className="flex shrink-0 items-center justify-center gap-2 border-b bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-400">
         <Eye className="size-3.5" />
-        Pregled — ovako portal vidi {client.naziv}. Što uploadaš ovdje njemu piše da si
-        dostavio ti.
+        Pregled — ovako portal vidi {client.naziv}. Samo za gledanje; ovdje ništa ne
+        šalješ ni ne mijenjaš.
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
@@ -60,16 +58,12 @@ export default async function PortalPreviewPage({
               <p className="mt-1 text-sm text-muted-foreground">Prijavljen kao klijent</p>
             </header>
 
-            <PortalChecklist
-              items={items}
-              asTeam={client.id}
-              submittedAt={client.submitted_at}
-            />
+            <PortalChecklist items={items} submittedAt={client.submitted_at} preview />
           </div>
           <PortalChatMobileNote />
         </div>
 
-        <PortalChatPanel asTeam={client.id} />
+        <PortalChatPanel preview />
       </div>
     </div>
   );

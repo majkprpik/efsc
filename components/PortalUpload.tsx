@@ -3,36 +3,26 @@
 import { useRef, useState, useTransition } from "react";
 import { Upload, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { uploadPortalDoc, uploadPortalDocAsTeam } from "@/app/portal/actions";
+import { uploadPortalDoc } from "@/app/portal/actions";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/client";
 
-type UploadResult = {
-  ok?: boolean;
-  status?: string | null;
-  note?: string | null;
-  error?: string;
-};
-
 /**
- * `asTeam` je clientId kad uploada netko iz tima umjesto klijenta; null kad
- * uploada sam klijent. Server u prvom slučaju zapisuje tko je stvarno slao.
+ * Upload za jednu stavku checkliste.
+ *
+ * `preview` je true u timskom pregledu: gumb izgleda isto kao kod klijenta, ali
+ * ne otvara birač datoteka niti šalje išta — pregled je samo za gledanje.
  */
-function send(fd: FormData, asTeam: string | null | undefined): Promise<UploadResult> {
-  return asTeam ? uploadPortalDocAsTeam(asTeam, fd) : uploadPortalDoc(fd);
-}
-
-/** Upload za jednu stavku checkliste. */
 export function PortalUploadButton({
   requestId,
   label,
   variant = "outline",
-  asTeam = null,
+  preview = false,
 }: {
   requestId?: string;
   label?: string;
   variant?: "outline" | "default";
-  asTeam?: string | null;
+  preview?: boolean;
 }) {
   const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,8 +33,8 @@ export function PortalUploadButton({
     if (requestId) fd.set("requestId", requestId);
     fd.set("file", file);
     start(async () => {
-      const res = await send(fd, asTeam);
-      if (res?.error) {
+      const res = await uploadPortalDoc(fd);
+      if (res && "error" in res) {
         toast.error(res.error);
         return;
       }
@@ -72,7 +62,7 @@ export function PortalUploadButton({
       <Button
         size="sm"
         variant={variant}
-        disabled={pending}
+        disabled={pending || preview}
         onClick={() => inputRef.current?.click()}
       >
         {pending ? (
@@ -87,7 +77,7 @@ export function PortalUploadButton({
 }
 
 /** Dropzone koja pušta AI da sam svrsta dokument. */
-export function PortalDropzone({ asTeam = null }: { asTeam?: string | null }) {
+export function PortalDropzone({ preview = false }: { preview?: boolean }) {
   const t = useT();
   const [drag, setDrag] = useState(false);
   const [pending, start] = useTransition();
@@ -97,8 +87,8 @@ export function PortalDropzone({ asTeam = null }: { asTeam?: string | null }) {
     const fd = new FormData();
     fd.set("file", file);
     start(async () => {
-      const res = await send(fd, asTeam);
-      if (res?.error) toast.error(res.error);
+      const res = await uploadPortalDoc(fd);
+      if (res && "error" in res) toast.error(res.error);
       else if (res?.status === "issue" && res.note)
         toast.warning(res.note, { duration: 8000 });
       else toast.success(t.portal.datotekaZaprimljena.replace("{file}", file.name));
@@ -108,19 +98,27 @@ export function PortalDropzone({ asTeam = null }: { asTeam?: string | null }) {
   return (
     <div
       onDragOver={(e) => {
+        if (preview) return;
         e.preventDefault();
         setDrag(true);
       }}
       onDragLeave={() => setDrag(false)}
       onDrop={(e) => {
+        if (preview) return;
         e.preventDefault();
         setDrag(false);
         const files = Array.from(e.dataTransfer.files ?? []);
         files.forEach(upload);
       }}
-      onClick={() => inputRef.current?.click()}
-      className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition ${
-        drag ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+      onClick={() => {
+        if (preview) return;
+        inputRef.current?.click();
+      }}
+      aria-disabled={preview}
+      className={`flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition ${
+        preview
+          ? "cursor-default opacity-60"
+          : `cursor-pointer ${drag ? "border-primary bg-primary/5" : "hover:bg-muted/50"}`
       }`}
     >
       <input
@@ -128,6 +126,7 @@ export function PortalDropzone({ asTeam = null }: { asTeam?: string | null }) {
         type="file"
         multiple
         className="hidden"
+        disabled={preview}
         onChange={(e) => {
           Array.from(e.target.files ?? []).forEach(upload);
           e.target.value = "";

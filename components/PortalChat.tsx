@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/lib/i18n/client";
@@ -20,22 +19,22 @@ type Msg = {
  * Odvojeno od EntityChata iako izgleda slično: taj gađa /api/entity-chat, koji
  * klijentima vraća 401, i nosi prijedloge po tipu entiteta koji ovdje ne postoje.
  *
- * `asTeam` je clientId kad razgovor gleda član tima iz pregleda. Tada se ne
- * priča s AI-em — asistent je tu za klijenta — nego se piše poruka klijentu,
- * potpisana imenom pošiljatelja.
+ * `preview` je true u timskom pregledu (/portal-admin/pregled): chat izgleda
+ * točno kao klijentov, ali je neaktivan — ne dohvaća razgovor niti šalje poruke.
+ * Pregled je prozor za gledanje, ne mjesto s kojeg tim piše klijentu.
  */
-function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
+function PortalChatBody({ preview = false }: { preview?: boolean }) {
   const t = useT();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(preview);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const api = asTeam ? `/api/portal-chat?clientId=${asTeam}` : "/api/portal-chat";
 
   useEffect(() => {
+    if (preview) return;
     let active = true;
-    fetch(api)
+    fetch("/api/portal-chat")
       .then((r) => r.json())
       .then((d) => {
         if (active && Array.isArray(d.messages)) setMessages(d.messages);
@@ -47,7 +46,7 @@ function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
     return () => {
       active = false;
     };
-  }, [api]);
+  }, [preview]);
 
   useEffect(() => {
     requestAnimationFrame(() =>
@@ -55,34 +54,8 @@ function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
     );
   }, [messages]);
 
-  /** Poruka tima klijentu — ne budi AI, samo sjedne u razgovor s potpisom. */
-  async function sendAsTeam(text: string) {
-    const body = text.trim();
-    if (!body || busy) return;
-    setInput("");
-    setBusy(true);
-    try {
-      const res = await fetch(api, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: body }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err.error ?? t.portal.chatGreska);
-        return;
-      }
-      const r = await fetch(api).then((x) => x.json());
-      if (Array.isArray(r.messages)) setMessages(r.messages);
-    } catch {
-      toast.error(t.portal.chatGreska);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function send(text: string) {
-    if (asTeam) return sendAsTeam(text);
+    if (preview) return;
 
     const question = text.trim();
     if (!question || busy) return;
@@ -141,7 +114,7 @@ function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{t.portal.chatNaslov}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {asTeam ? t.portal.chatPodnaslovTim : t.portal.chatPodnaslov}
+            {t.portal.chatPodnaslov}
           </div>
         </div>
       </div>
@@ -153,23 +126,21 @@ function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
           </div>
         ) : messages.length === 0 ? (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {asTeam ? t.portal.chatUvodTim : t.portal.chatUvod}
-            </p>
-            {/* Prijedlozi su klijentova pitanja AI-u; tim ovdje ne pita, nego javlja. */}
-            {!asTeam && (
-              <div className="flex flex-col gap-2">
-                {t.portal.chatPrijedlozi.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="chat-suggestion rounded-md border px-3 py-2 text-left text-sm transition"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
+            <p className="text-sm text-muted-foreground">{t.portal.chatUvod}</p>
+            {/* Prijedlozi su klijentova pitanja AI-u. U pregledu su tu radi
+                vjernog izgleda, ali su neaktivni kao i ostatak chata. */}
+            <div className="flex flex-col gap-2">
+              {t.portal.chatPrijedlozi.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => send(s)}
+                  disabled={preview}
+                  className="chat-suggestion rounded-md border px-3 py-2 text-left text-sm transition disabled:cursor-default disabled:opacity-60"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((m, i) => (
@@ -207,11 +178,11 @@ function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={asTeam ? t.portal.chatPlaceholderTim : t.portal.chatPlaceholder}
-          disabled={busy}
+          placeholder={t.portal.chatPlaceholder}
+          disabled={busy || preview}
           className="bg-card"
         />
-        <Button type="submit" size="icon" disabled={busy || !input.trim()}>
+        <Button type="submit" size="icon" disabled={busy || preview || !input.trim()}>
           <Send className="size-4" />
         </Button>
       </form>
@@ -223,10 +194,10 @@ function PortalChatBody({ asTeam = null }: { asTeam?: string | null }) {
  * Pomoć stoji stalno sa strane, kao AI panel na Orbitovim stranicama — nije
  * skočni prozor. Na mobitelu nema mjesta za split pa ide kratka napomena.
  */
-export function PortalChatPanel({ asTeam = null }: { asTeam?: string | null }) {
+export function PortalChatPanel({ preview = false }: { preview?: boolean }) {
   return (
     <div className="chat-panel hidden min-h-0 w-[360px] min-w-0 shrink-0 flex-col border-l md:flex">
-      <PortalChatBody asTeam={asTeam} />
+      <PortalChatBody preview={preview} />
     </div>
   );
 }
