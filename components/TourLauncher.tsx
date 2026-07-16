@@ -16,6 +16,7 @@ import { PlayCircle, Square, ChevronRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -86,9 +87,12 @@ export function TourLauncher() {
         }
       />
       <DropdownMenuContent side="bottom" align="end" className="w-56">
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-          Odaberi tutorial
-        </DropdownMenuLabel>
+        {/* Base UI Menu.GroupLabel throws unless it sits inside a Menu.Group. */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+            Odaberi tutorial
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         {/* One row per tour; the detail (blurb, start, segment jumps) lives in a
             submenu so the panel stays short instead of stacking every tour's
             full option list into one scrollless box. */}
@@ -110,9 +114,11 @@ export function TourLauncher() {
                 Pokreni od početka
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                Skoči na dio
-              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  Skoči na dio
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               {Array.from({ length: tour.segments }, (_, i) => i + 1).map((seg) => (
                 <DropdownMenuItem
                   key={seg}
