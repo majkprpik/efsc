@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   Loader2,
   ListPlus,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { addRequest, deleteRequest, invitePortalUser, seedRequests } from "./actions";
@@ -151,24 +152,41 @@ function ClientPanel({ client }: { client: AdminClient }) {
             </p>
           )}
 
-          <form action={invite} className="flex gap-2">
-            <Input
-              name="email"
-              type="email"
-              placeholder={client.email || "ime@tvrtka.hr"}
-              defaultValue={client.email ?? ""}
-              required
-              className="max-w-xs"
+          <div className="flex flex-wrap items-center gap-2">
+            <form action={invite} className="flex gap-2">
+              <Input
+                name="email"
+                type="email"
+                placeholder={client.email || "ime@tvrtka.hr"}
+                defaultValue={client.email ?? ""}
+                required
+                className="max-w-xs"
+              />
+              <Button type="submit" size="sm" variant="outline" disabled={pending}>
+                {pending ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Mail className="size-3.5" />
+                )}
+                Pošalji pozivnicu
+              </Button>
+            </form>
+
+            <Button
+              size="sm"
+              variant="ghost"
+              render={
+                <a
+                  href={`/portal-admin/pregled/${client.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Eye className="size-3.5" />
+                  Vidi kao klijent
+                </a>
+              }
             />
-            <Button type="submit" size="sm" variant="outline" disabled={pending}>
-              {pending ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Mail className="size-3.5" />
-              )}
-              Pošalji pozivnicu
-            </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
