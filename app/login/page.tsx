@@ -1,4 +1,5 @@
 import { login, signup } from "./actions";
+import { getT } from "@/lib/i18n/server";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const sp = await searchParams;
+  const t = await getT();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
@@ -17,7 +19,7 @@ export default async function LoginPage({
         <CardHeader className="text-center">
           <div className="text-3xl font-semibold tracking-tight">Orbit</div>
           <div className="text-[11px] uppercase tracking-[2px] text-muted-foreground">
-            projektni hub · esfc.hr
+            {t.login.podnaslov}
           </div>
         </CardHeader>
         <CardContent>
@@ -34,29 +36,29 @@ export default async function LoginPage({
 
           <form className="flex flex-col gap-4">
             <div className="grid gap-1.5">
-              <Label htmlFor="name">Ime i prezime (za registraciju)</Label>
-              <Input id="name" name="name" placeholder="Ana Kovač" />
+              <Label htmlFor="name">{t.login.ime}</Label>
+              <Input id="name" name="name" placeholder={t.login.imePlaceholder} />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">{t.login.email}</Label>
               {/* DEMO: predpopunjeno za test — ukloniti defaultValue za produkciju */}
               <Input id="email" name="email" type="email" placeholder="ana@esfc.hr" defaultValue="ana@esfc.hr" required />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="password">Lozinka</Label>
+              <Label htmlFor="password">{t.login.lozinka}</Label>
               {/* DEMO: predpopunjeno za test — ukloniti defaultValue za produkciju */}
               <Input id="password" name="password" type="password" placeholder="••••••••" defaultValue="orbit1234" required />
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
-              Demo pristup je predpopunjen — samo klikni Prijava.
+              {t.login.demoNapomena}
             </p>
 
             <Button type="submit" formAction={login} className="mt-1 w-full">
-              Prijava
+              {t.login.prijava}
             </Button>
             <Button type="submit" formAction={signup} variant="outline" className="w-full">
-              Registracija
+              {t.login.registracija}
             </Button>
           </form>
         </CardContent>

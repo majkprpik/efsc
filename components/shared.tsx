@@ -13,6 +13,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { TopBarActions } from "@/components/TopBarActions";
 import { DEFAULT_LOCALE, getDictionary, tStatus, type Locale } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +67,7 @@ export function PageHeader({
       )}
       <h1 className="flex-1 text-lg font-semibold tracking-tight">{title}</h1>
       {children}
+      <TopBarActions />
     </header>
   );
 }

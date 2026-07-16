@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { DemoBridge } from "@/components/DemoBridge";
 import { SectionShell } from "@/components/SectionShell";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ProfileProvider } from "@/components/ProfileContext";
 import { LocaleProvider } from "@/lib/i18n/client";
 import { getLocale } from "@/lib/i18n/server";
 import { ini } from "@/lib/ui";
@@ -14,11 +15,7 @@ import { ini } from "@/lib/ui";
  * navigation. Streaming them lets the page render immediately; the badges fill
  * in a beat later.
  */
-async function SidebarWithCounts({
-  profile,
-}: {
-  profile: { name: string; email: string; initials: string };
-}) {
+async function SidebarWithCounts() {
   const supabase = await createClient();
   const [klijenti, potencijalni, natjecaji, projekti] = await Promise.all([
     supabase
@@ -41,7 +38,6 @@ async function SidebarWithCounts({
         natjecaji: natjecaji.count ?? 0,
         projekti: projekti.count ?? 0,
       }}
-      profile={profile}
     />
   );
 }
@@ -72,11 +68,12 @@ export default async function AppLayout({
 
   return (
     <LocaleProvider locale={locale}>
+    <ProfileProvider profile={profileProps}>
     <SidebarProvider>
       <Suspense
-        fallback={<AppSidebar counts={{}} profile={profileProps} />}
+        fallback={<AppSidebar counts={{}} />}
       >
-        <SidebarWithCounts profile={profileProps} />
+        <SidebarWithCounts />
       </Suspense>
       <SidebarInset className="overflow-hidden">
         <SectionShell>{children}</SectionShell>
@@ -87,6 +84,7 @@ export default async function AppLayout({
         <DemoBridge />
       </Suspense>
     </SidebarProvider>
+    </ProfileProvider>
     </LocaleProvider>
   );
 }

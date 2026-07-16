@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { Trophy } from "lucide-react";
+import { Trophy, Globe, MessagesSquare, RefreshCw, ExternalLink, CalendarClock } from "lucide-react";
 import { DocDialog } from "@/components/DocDialog";
 import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
+import { nalaziZaNatjecaj, brojNovih, pomakRoka, type Nalaz } from "@/lib/demo-nalazi";
 
 export type Natjecaj = {
   id: string;
@@ -72,6 +73,12 @@ export function NatjecajiView({
     ? projects.filter((p) => p.natjecaj_id === selected.id)
     : [];
   const selectedDocs = selected ? docs.filter((d) => d.natjecaj_id === selected.id) : [];
+
+  const nalazi = useMemo(
+    () => (selected ? nalaziZaNatjecaj(selected.id, selected.status) : []),
+    [selected],
+  );
+  const noviRok = pomakRoka(nalazi);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
@@ -139,7 +146,12 @@ export function NatjecajiView({
             </div>
 
             <div data-tour="nat-info" className="mb-5 grid grid-cols-3 gap-3">
-              <Info label={t.natjecaji.rokPrijave} value={shortDate(selected.rok)} accent={selected.status === "aktivan"} />
+              <Info
+                label={t.natjecaji.rokPrijave}
+                value={shortDate(selected.rok)}
+                accent={selected.status === "aktivan"}
+                note={noviRok && `${t.natjecaji.izvori.izvorJavlja} ${noviRok.noviRok}`}
+              />
               <Info label={t.natjecaji.klijenata} value={String(clientCount(selected.id))} />
               <Info label={t.natjecaji.projekata} value={String(selectedProjects.length)} />
             </div>
@@ -193,6 +205,8 @@ export function NatjecajiView({
                 </Card>
               </>
             )}
+
+            <IzvoriFeed nalazi={nalazi} />
           </div>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
@@ -214,11 +228,118 @@ export function NatjecajiView({
   );
 }
 
-function Info({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Info({
+  label,
+  value,
+  accent,
+  note,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  note?: string | false;
+}) {
   return (
     <div className="rounded-lg border bg-card px-4 py-3">
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className={cn("mt-0.5 text-sm font-medium", accent && "text-red-600 dark:text-red-400")}>{value}</div>
+      {note && (
+        <div className="mt-1 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+          <span className="relative flex size-1.5 shrink-0">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-500 opacity-75" />
+            <span className="relative inline-flex size-1.5 rounded-full bg-amber-500" />
+          </span>
+          <span className="truncate">{note}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const VRSTA_ICON = { rok: CalendarClock, dokumentacija: Globe, pojasnjenje: Globe, spomen: MessagesSquare };
+
+const VRSTA_BADGE: Record<string, string> = {
+  rok: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  dokumentacija: "border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  pojasnjenje: "border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-400",
+  spomen: "border-muted-foreground/30 bg-muted text-muted-foreground",
+};
+
+function IzvoriFeed({ nalazi }: { nalazi: Nalaz[] }) {
+  const t = useT();
+  const [openId, setOpenId] = useState<string | null>(null);
+  const novih = brojNovih(nalazi);
+
+  const relativno = (h: number) =>
+    h < 24
+      ? t.natjecaji.izvori.prijeSati.replace("{n}", String(h))
+      : t.natjecaji.izvori.prijeDana.replace("{n}", String(Math.round(h / 24)));
+
+  return (
+    <div data-tour="nat-izvori">
+      <div className="mb-2 mt-6 flex items-center justify-between gap-3">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {t.natjecaji.izvori.naslov}
+        </div>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span>
+            {t.natjecaji.izvori.zadnjaProvjera} {relativno(4)}
+            {novih > 0 && ` · ${novih} ${t.natjecaji.izvori.novihNalaza}`}
+          </span>
+          <button className="flex items-center gap-1.5 rounded-md border px-2 py-1 hover:bg-muted/50">
+            <RefreshCw className="size-3" />
+            {t.natjecaji.izvori.provjeriSad}
+          </button>
+        </div>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          {nalazi.length ? (
+            nalazi.map((n, i) => {
+              const Icon = VRSTA_ICON[n.vrsta];
+              const open = openId === n.id;
+              return (
+                <div key={n.id} className={cn(i > 0 && "border-t")}>
+                  <button
+                    onClick={() => setOpenId(open ? null : n.id)}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted/50"
+                  >
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <Icon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm">{n.naslov}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {n.izvor} · {relativno(n.prijeSati)}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={cn("shrink-0", VRSTA_BADGE[n.vrsta])}>
+                      {t.natjecaji.izvori.vrste[n.vrsta]}
+                    </Badge>
+                  </button>
+                  {open && (
+                    <div className="border-t bg-muted/30 px-4 py-3 pl-15">
+                      <p className="text-sm text-muted-foreground">{n.sazetak}</p>
+                      <a
+                        href={n.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs text-foreground underline underline-offset-4 hover:no-underline"
+                      >
+                        <ExternalLink className="size-3" />
+                        {t.natjecaji.izvori.otvoriIzvornik}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <Empty>{t.natjecaji.izvori.prazno}</Empty>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

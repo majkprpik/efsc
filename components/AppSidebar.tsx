@@ -1,6 +1,5 @@
 "use client";
 
-import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,13 +11,11 @@ import {
   ListChecks,
   Clock,
   Coins,
-  LogOut,
   Share2,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -28,13 +25,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { RowPending } from "@/components/RowPending";
 import { sectionOf } from "@/components/shared";
-import { LocaleToggle } from "@/components/LocaleToggle";
 import { useT } from "@/lib/i18n/client";
-import { TourLauncher } from "@/components/TourLauncher";
 
 type Item = {
   href: string;
@@ -66,13 +59,7 @@ const SECTIONS: { title: keyof ReturnType<typeof useT>["nav"]; items: Item[] }[]
   { title: "analitika", items: [{ href: "/financije", label: "financije", icon: Coins }] },
 ];
 
-export function AppSidebar({
-  counts,
-  profile,
-}: {
-  counts: Record<string, number>;
-  profile: { name: string; email: string; initials: string };
-}) {
+export function AppSidebar({ counts }: { counts: Record<string, number> }) {
   const pathname = usePathname();
   const t = useT();
 
@@ -121,31 +108,6 @@ export function AppSidebar({
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t">
-        <Suspense fallback={null}>
-          <TourLauncher />
-        </Suspense>
-        <div className="flex items-center gap-2.5 px-1 py-1">
-          <Avatar className="size-8">
-            <AvatarFallback className="text-xs">{profile.initials}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium">{profile.name}</div>
-            <div className="truncate text-xs text-muted-foreground">{profile.email}</div>
-          </div>
-          <LocaleToggle />
-          <ThemeToggle />
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
-              title={t.nav.odjava}
-              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </form>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }
