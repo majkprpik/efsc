@@ -262,6 +262,13 @@ let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 
 function installControls(showHud: boolean) {
   keyHandler = (e: KeyboardEvent) => {
+    // Escape always quits, even from the start veil — that overlay covers the
+    // launcher's Stop button, so without a key out there is no way to bail once
+    // the tour has begun loading.
+    if (e.key === "Escape") {
+      abortTour();
+      return;
+    }
     // Ignore while typing, so S in a search box doesn't skip the tour.
     const t = e.target as HTMLElement | null;
     if (
@@ -360,6 +367,27 @@ function waitForStartGesture(): Promise<void> {
       "<div>Click anywhere to start the walkthrough</div>" +
       '<div style="font:400 14px/1.4 -apple-system,system-ui;color:#22d3ee">Make sure your screen recorder is running</div>';
     veil.addEventListener("click", () => dismissStartVeil());
+
+    // A way out of the gate itself: clicking the veil starts the tour, so the
+    // Cancel control must stop that click from also counting as "start".
+    const cancel = document.createElement("button");
+    cancel.textContent = "Odustani (Esc)";
+    cancel.style.cssText = [
+      "margin-top:8px",
+      "padding:7px 14px",
+      "background:transparent",
+      "color:rgba(255,255,255,.7)",
+      "border:1px solid rgba(255,255,255,.3)",
+      "border-radius:8px",
+      "font:600 13px/1 -apple-system,system-ui,sans-serif",
+      "cursor:pointer",
+    ].join(";");
+    cancel.addEventListener("click", (e) => {
+      e.stopPropagation();
+      abortTour();
+    });
+    veil.appendChild(cancel);
+
     document.body.appendChild(veil);
   });
 }
@@ -388,6 +416,10 @@ export function abortTour() {
   // Stopping while the start veil is still up must release the await on it, or
   // the run stays parked forever and blocks the next start.
   dismissStartVeil();
+  // Tell the launcher the run is over so its Stop flips back to Start. The
+  // runner dispatches this too when it unwinds, but aborting from the veil (or
+  // via Escape) should update the button immediately, not one tick later.
+  window.dispatchEvent(new CustomEvent(TOUR_ENDED));
 }
 
 // --- Runner ------------------------------------------------------------------
