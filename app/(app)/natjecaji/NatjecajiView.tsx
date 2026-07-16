@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useT, useLocale } from "@/lib/i18n/client";
+import { plural } from "@/lib/i18n/dictionaries";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import { shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { Trophy, Globe, MessagesSquare, RefreshCw, ExternalLink, CalendarClock } from "lucide-react";
 import { DocDialog } from "@/components/DocDialog";
+import { DocDropzone } from "@/components/DocUpload";
 import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
 import { nalaziZaNatjecaj, brojNovih, pomakRoka, type Nalaz } from "@/lib/demo-nalazi";
 
@@ -177,6 +179,9 @@ export function NatjecajiView({
                 ) : (
                   <Empty>{t.projekti.nemaDokumenata}</Empty>
                 )}
+                <div className="p-3">
+                  <DocDropzone docKind="natjecaj" natjecajId={selected.id} />
+                </div>
               </CardContent>
             </Card>
 
@@ -267,6 +272,7 @@ const VRSTA_BADGE: Record<string, string> = {
 
 function IzvoriFeed({ nalazi }: { nalazi: Nalaz[] }) {
   const t = useT();
+  const locale = useLocale();
   const [openId, setOpenId] = useState<string | null>(null);
   const novih = brojNovih(nalazi);
 
@@ -284,7 +290,7 @@ function IzvoriFeed({ nalazi }: { nalazi: Nalaz[] }) {
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span>
             {t.natjecaji.izvori.zadnjaProvjera} {relativno(4)}
-            {novih > 0 && ` · ${novih} ${t.natjecaji.izvori.novihNalaza}`}
+            {novih > 0 && ` · ${novih} ${plural(locale, novih, t.natjecaji.izvori.novihNalaza)}`}
           </span>
           <button className="flex items-center gap-1.5 rounded-md border px-2 py-1 hover:bg-muted/50">
             <RefreshCw className="size-3" />
