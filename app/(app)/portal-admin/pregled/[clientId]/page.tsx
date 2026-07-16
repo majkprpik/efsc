@@ -4,10 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { PortalChecklist, type ChecklistItem } from "@/components/PortalChecklist";
 
 /**
- * Timski pregled: pokazuje klijentov portal točno kako ga on vidi, bez uploada.
+ * Timski pregled: klijentov portal onakav kakav ga on vidi, i s uploadom.
  *
- * Read-only namjerno — tim ovdje gleda tuđi ekran, a ne šalje dokumente u
- * klijentovo ime. Za to služi /portal-admin.
+ * Upload radi jer klijenti papire često pošalju mailom pa ih netko iz tima ubaci
+ * umjesto njih. Ono što ne radi je predaja dokumentacije — to je klijentova
+ * izjava da je gotov i nitko je ne može dati u njegovo ime.
+ *
+ * Svaki upload odavde nosi ime osobe koja ga je poslala i klijent tu oznaku vidi
+ * na svom portalu; ekran je vjeran, zapis nije lažan.
  */
 export default async function PortalPreviewPage({
   params,
@@ -19,7 +23,7 @@ export default async function PortalPreviewPage({
 
   const { data: client } = await supabase
     .from("clients")
-    .select("id, naziv")
+    .select("id, naziv, submitted_at")
     .eq("id", clientId)
     .single();
 
@@ -28,7 +32,7 @@ export default async function PortalPreviewPage({
   const { data: rows } = await supabase
     .from("portal_requests")
     .select(
-      "id, name, description, required, uploaded, uploaded_at, original_name, ai_status, ai_note",
+      "id, name, description, required, uploaded, uploaded_at, original_name, ai_status, ai_note, uploaded_by, uploaded_by_name",
     )
     .eq("client_id", clientId)
     .order("sort")
@@ -40,7 +44,8 @@ export default async function PortalPreviewPage({
     <div className="min-h-screen bg-muted/30">
       <div className="flex items-center justify-center gap-2 border-b bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-400">
         <Eye className="size-3.5" />
-        Pregled — ovako portal vidi {client.naziv}. Upload je onemogućen.
+        Pregled — ovako portal vidi {client.naziv}. Što uploadaš ovdje njemu piše da si
+        dostavio ti.
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
@@ -52,7 +57,11 @@ export default async function PortalPreviewPage({
           <p className="mt-1 text-sm text-muted-foreground">Prijavljen kao klijent</p>
         </header>
 
-        <PortalChecklist items={items} readOnly />
+        <PortalChecklist
+          items={items}
+          asTeam={client.id}
+          submittedAt={client.submitted_at}
+        />
       </div>
     </div>
   );

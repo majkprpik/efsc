@@ -3,19 +3,36 @@
 import { useRef, useState, useTransition } from "react";
 import { Upload, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { uploadPortalDoc } from "@/app/portal/actions";
+import { uploadPortalDoc, uploadPortalDocAsTeam } from "@/app/portal/actions";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/client";
+
+type UploadResult = {
+  ok?: boolean;
+  status?: string | null;
+  note?: string | null;
+  error?: string;
+};
+
+/**
+ * `asTeam` je clientId kad uploada netko iz tima umjesto klijenta; null kad
+ * uploada sam klijent. Server u prvom slučaju zapisuje tko je stvarno slao.
+ */
+function send(fd: FormData, asTeam: string | null | undefined): Promise<UploadResult> {
+  return asTeam ? uploadPortalDocAsTeam(asTeam, fd) : uploadPortalDoc(fd);
+}
 
 /** Upload za jednu stavku checkliste. */
 export function PortalUploadButton({
   requestId,
   label,
   variant = "outline",
+  asTeam = null,
 }: {
   requestId?: string;
   label?: string;
   variant?: "outline" | "default";
+  asTeam?: string | null;
 }) {
   const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,7 +43,7 @@ export function PortalUploadButton({
     if (requestId) fd.set("requestId", requestId);
     fd.set("file", file);
     start(async () => {
-      const res = await uploadPortalDoc(fd);
+      const res = await send(fd, asTeam);
       if (res?.error) {
         toast.error(res.error);
         return;
@@ -70,7 +87,7 @@ export function PortalUploadButton({
 }
 
 /** Dropzone koja pušta AI da sam svrsta dokument. */
-export function PortalDropzone() {
+export function PortalDropzone({ asTeam = null }: { asTeam?: string | null }) {
   const t = useT();
   const [drag, setDrag] = useState(false);
   const [pending, start] = useTransition();
@@ -80,7 +97,7 @@ export function PortalDropzone() {
     const fd = new FormData();
     fd.set("file", file);
     start(async () => {
-      const res = await uploadPortalDoc(fd);
+      const res = await send(fd, asTeam);
       if (res?.error) toast.error(res.error);
       else if (res?.status === "issue" && res.note)
         toast.warning(res.note, { duration: 8000 });

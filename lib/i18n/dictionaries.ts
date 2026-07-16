@@ -252,6 +252,9 @@ const hr = {
     saljem: "Šaljem…",
     cekaStatus: "Čeka",
     dostavljenoStatus: "Dostavljeno",
+    /** {name} → ime osobe iz tima */
+    dostavioTim: "dostavio {name} (Orbit)",
+    dostavioTimBezImena: "dostavio Orbit tim",
     dokumentZaprimljen: "Dokument zaprimljen",
     /** {file} → naziv datoteke */
     datotekaZaprimljena: "{file} zaprimljen",
@@ -525,6 +528,9 @@ const en: typeof hr = {
     saljem: "Sending…",
     cekaStatus: "Pending",
     dostavljenoStatus: "Delivered",
+    /** {name} → team member name */
+    dostavioTim: "uploaded by {name} (Orbit)",
+    dostavioTimBezImena: "uploaded by the Orbit team",
     dokumentZaprimljen: "Document received",
     datotekaZaprimljena: "{file} received",
     povuciDokumente: "Drag documents here, or click to choose",

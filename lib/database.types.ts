@@ -324,6 +324,8 @@ export type Database = {
           storage_path: string | null
           uploaded: boolean
           uploaded_at: string | null
+          uploaded_by: string
+          uploaded_by_name: string | null
         }
         Insert: {
           ai_note?: string | null
@@ -340,6 +342,8 @@ export type Database = {
           storage_path?: string | null
           uploaded?: boolean
           uploaded_at?: string | null
+          uploaded_by?: string
+          uploaded_by_name?: string | null
         }
         Update: {
           ai_note?: string | null
@@ -356,6 +360,8 @@ export type Database = {
           storage_path?: string | null
           uploaded?: boolean
           uploaded_at?: string | null
+          uploaded_by?: string
+          uploaded_by_name?: string | null
         }
         Relationships: [
           {
