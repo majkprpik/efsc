@@ -82,7 +82,7 @@ export function DocDialog({
         // DialogContent is itself a grid, so the body needs an explicit
         // auto+1fr track — flex-1 did nothing here and left a gap under
         // the header.
-        <DialogContent className="grid h-[85vh] max-w-[95vw] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-6xl">
+        <DialogContent className="grid h-[90vh] w-[96vw] max-w-[96vw] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[96vw] xl:max-w-[1600px]">
           {/* Screen readers need a title; the visible header below carries the
               same name plus type, date and origin. */}
           <DialogTitle className="sr-only">{fileName}</DialogTitle>
@@ -92,7 +92,7 @@ export function DocDialog({
             uploadedAt={uploadedAt}
             context={context}
           />
-          <div className="grid min-h-0 grid-cols-1 md:grid-cols-[1.4fr_1fr]">
+          <div className="grid min-h-0 grid-cols-1 md:grid-cols-[1fr_minmax(320px,380px)]">
             <div className="min-h-0 border-r">
               <DocViewer storagePath={storagePath!} fileName={fileName} />
             </div>
