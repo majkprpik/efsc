@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PortalChecklist, type ChecklistItem } from "@/components/PortalChecklist";
+import { PortalChat } from "@/components/PortalChat";
 
 /**
  * Timski pregled: klijentov portal onakav kakav ga on vidi, i s uploadom.
@@ -62,6 +63,8 @@ export default async function PortalPreviewPage({
           asTeam={client.id}
           submittedAt={client.submitted_at}
         />
+
+        <PortalChat asTeam={client.id} />
       </div>
     </div>
   );

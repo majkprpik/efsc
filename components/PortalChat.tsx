@@ -2,29 +2,46 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles, Loader2, MessageCircle, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/lib/i18n/client";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  author_kind?: string | null;
+  author_name?: string | null;
+};
 
 /**
  * AI pomoć za klijenta na portalu.
  *
  * Odvojeno od EntityChata iako izgleda slično: taj gađa /api/entity-chat, koji
  * klijentima vraća 401, i nosi prijedloge po tipu entiteta koji ovdje ne postoje.
+ *
+ * `asTeam` je clientId kad razgovor gleda član tima iz pregleda. Tada se ne
+ * priča s AI-em — asistent je tu za klijenta — nego se piše poruka klijentu,
+ * potpisana imenom pošiljatelja.
  */
-function PortalChatBody({ onClose }: { onClose?: () => void }) {
+function PortalChatBody({
+  onClose,
+  asTeam = null,
+}: {
+  onClose?: () => void;
+  asTeam?: string | null;
+}) {
   const t = useT();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const api = asTeam ? `/api/portal-chat?clientId=${asTeam}` : "/api/portal-chat";
 
   useEffect(() => {
     let active = true;
-    fetch("/api/portal-chat")
+    fetch(api)
       .then((r) => r.json())
       .then((d) => {
         if (active && Array.isArray(d.messages)) setMessages(d.messages);
@@ -36,7 +53,7 @@ function PortalChatBody({ onClose }: { onClose?: () => void }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     requestAnimationFrame(() =>
@@ -44,7 +61,35 @@ function PortalChatBody({ onClose }: { onClose?: () => void }) {
     );
   }, [messages]);
 
+  /** Poruka tima klijentu — ne budi AI, samo sjedne u razgovor s potpisom. */
+  async function sendAsTeam(text: string) {
+    const body = text.trim();
+    if (!body || busy) return;
+    setInput("");
+    setBusy(true);
+    try {
+      const res = await fetch(api, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: body }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error ?? t.portal.chatGreska);
+        return;
+      }
+      const r = await fetch(api).then((x) => x.json());
+      if (Array.isArray(r.messages)) setMessages(r.messages);
+    } catch {
+      toast.error(t.portal.chatGreska);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function send(text: string) {
+    if (asTeam) return sendAsTeam(text);
+
     const question = text.trim();
     if (!question || busy) return;
     setInput("");
@@ -101,7 +146,9 @@ function PortalChatBody({ onClose }: { onClose?: () => void }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{t.portal.chatNaslov}</div>
-          <div className="truncate text-xs text-muted-foreground">{t.portal.chatPodnaslov}</div>
+          <div className="truncate text-xs text-muted-foreground">
+            {asTeam ? t.portal.chatPodnaslovTim : t.portal.chatPodnaslov}
+          </div>
         </div>
         {onClose && (
           <button
@@ -121,30 +168,44 @@ function PortalChatBody({ onClose }: { onClose?: () => void }) {
           </div>
         ) : messages.length === 0 ? (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">{t.portal.chatUvod}</p>
-            <div className="flex flex-col gap-2">
-              {t.portal.chatPrijedlozi.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="chat-suggestion rounded-md border px-3 py-2 text-left text-sm transition"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+            <p className="text-sm text-muted-foreground">
+              {asTeam ? t.portal.chatUvodTim : t.portal.chatUvod}
+            </p>
+            {/* Prijedlozi su klijentova pitanja AI-u; tim ovdje ne pita, nego javlja. */}
+            {!asTeam && (
+              <div className="flex flex-col gap-2">
+                {t.portal.chatPrijedlozi.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    className="chat-suggestion rounded-md border px-3 py-2 text-left text-sm transition"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           messages.map((m, i) => (
             <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-              <div
-                className={
-                  m.role === "user"
-                    ? "chat-bubble-user max-w-[85%] rounded-lg px-3 py-2 text-sm"
-                    : "chat-bubble-ai max-w-[85%] whitespace-pre-wrap rounded-lg border px-3 py-2 text-sm"
-                }
-              >
-                {m.content || (busy ? "…" : "")}
+              <div className={m.role === "user" ? "max-w-[85%]" : "max-w-[85%]"}>
+                {m.author_kind === "team" && (
+                  <div className="mb-0.5 text-right text-[11px] text-muted-foreground">
+                    {m.author_name
+                      ? t.portal.chatOdTima.replace("{name}", m.author_name)
+                      : t.portal.chatOdTimaBezImena}
+                  </div>
+                )}
+                <div
+                  className={
+                    m.role === "user"
+                      ? "chat-bubble-user rounded-lg px-3 py-2 text-sm"
+                      : "chat-bubble-ai whitespace-pre-wrap rounded-lg border px-3 py-2 text-sm"
+                  }
+                >
+                  {m.content || (busy ? "…" : "")}
+                </div>
               </div>
             </div>
           ))
@@ -161,7 +222,7 @@ function PortalChatBody({ onClose }: { onClose?: () => void }) {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={t.portal.chatPlaceholder}
+          placeholder={asTeam ? t.portal.chatPlaceholderTim : t.portal.chatPlaceholder}
           disabled={busy}
           className="bg-card"
         />
@@ -177,7 +238,7 @@ function PortalChatBody({ onClose }: { onClose?: () => void }) {
  * Portal je jedan uski stupac, pa chat ne može stalno stajati sa strane kao u
  * Orbitu. Umjesto toga je gumb u kutu koji otvara panel — isti na svim širinama.
  */
-export function PortalChat() {
+export function PortalChat({ asTeam = null }: { asTeam?: string | null }) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
@@ -186,7 +247,7 @@ export function PortalChat() {
       {open && (
         <div className="fixed inset-0 z-50 sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[560px] sm:max-h-[calc(100vh-8rem)] sm:w-[380px]">
           <div className="chat-panel flex h-full flex-col overflow-hidden border bg-card shadow-xl sm:rounded-xl">
-            <PortalChatBody onClose={() => setOpen(false)} />
+            <PortalChatBody onClose={() => setOpen(false)} asTeam={asTeam} />
           </div>
         </div>
       )}

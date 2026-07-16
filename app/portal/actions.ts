@@ -49,7 +49,7 @@ export async function getPortalContext() {
  * Isti oblik kao getPortalContext, pa ga upload može gutati bez razlike —
  * razlika je samo tko smije: ovdje mora biti tim, tamo baš taj klijent.
  */
-async function getTeamContext(clientId: string) {
+export async function getTeamPortalContext(clientId: string) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
@@ -240,7 +240,7 @@ export async function uploadPortalDoc(formData: FormData) {
  */
 export async function uploadPortalDocAsTeam(clientId: string, formData: FormData) {
   const t = await getT();
-  const ctx = await getTeamContext(clientId);
+  const ctx = await getTeamPortalContext(clientId);
   if (!ctx) return { error: t.portal.nemasPristup };
 
   return doUpload(ctx, formData, {

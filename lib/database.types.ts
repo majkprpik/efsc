@@ -15,6 +15,7 @@ export type Database = {
       chat_messages: {
         Row: {
           author_id: string | null
+          author_kind: string
           author_name: string | null
           content: string
           created_at: string
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           author_id?: string | null
+          author_kind?: string
           author_name?: string | null
           content: string
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           author_id?: string | null
+          author_kind?: string
           author_name?: string | null
           content?: string
           created_at?: string
