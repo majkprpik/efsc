@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge, Empty, Dot } from "@/components/shared";
 import { shortDate } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { Trophy, File } from "lucide-react";
+import { Trophy } from "lucide-react";
+import { DocDialog } from "@/components/DocDialog";
 import { EntityChatPanel, EntityChatMobileNote } from "@/components/EntityChat";
 
 export type Natjecaj = {
@@ -32,7 +33,7 @@ export type ProjRow = {
   status: string;
   clientNaziv: string | null;
 };
-export type NatDoc = { id: string; natjecaj_id: string; filename: string };
+export type NatDoc = { id: string; natjecaj_id: string; filename: string; storage_path: string | null };
 
 const FILTERS = [
   { key: "svi", label: "svi" },
@@ -150,12 +151,15 @@ export function NatjecajiView({
               <CardContent className="p-0">
                 {selectedDocs.length ? (
                   selectedDocs.map((d, i) => (
-                    <div key={d.id} className={cn("flex items-center gap-3 px-4 py-3", i > 0 && "border-t")}>
-                      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                        <File className="size-4" />
-                      </div>
-                      <div className="min-w-0 flex-1 truncate text-sm">{d.filename}</div>
-                      <span className="text-xs text-muted-foreground">Dokumentacija</span>
+                    <div key={d.id} className={cn("flex items-center gap-3 px-4 py-2.5", i > 0 && "border-t")}>
+                      <DocDialog
+                        docKind="natjecaj"
+                        docId={d.id}
+                        storagePath={d.storage_path}
+                        fileName={d.filename}
+                        uploaded={!!d.storage_path}
+                        context={selected.naziv}
+                      />
                     </div>
                   ))
                 ) : (

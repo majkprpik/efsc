@@ -16,7 +16,7 @@ export default async function NatjecajiPage() {
     supabase
       .from("projects")
       .select("id, natjecaj_id, naziv, progress, color, status, clients(naziv)"),
-    supabase.from("natjecaj_docs").select("id, natjecaj_id, filename").order("filename"),
+    supabase.from("natjecaj_docs").select("id, natjecaj_id, filename, storage_path").order("filename"),
   ]);
 
   const projects: ProjRow[] = (projRows ?? []).map((p) => ({
