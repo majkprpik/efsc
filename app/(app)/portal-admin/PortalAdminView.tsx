@@ -38,6 +38,8 @@ export type AdminClient = {
   naziv: string;
   email: string | null;
   status: string;
+  /** Kad je klijent s portala javio da je gotov. null = još slaže. */
+  submitted_at: string | null;
   users: { id: string; email: string; name: string }[];
   requests: AdminRequest[];
 };
@@ -76,11 +78,19 @@ export function PortalAdminView({
                   {c.users.length > 0 ? `${c.users.length} pristup` : "bez pristupa"}
                 </div>
               </div>
-              {total > 0 && (
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {done}/{total}
-                </span>
-              )}
+              <div className="flex shrink-0 items-center gap-1.5">
+                {c.submitted_at && (
+                  <CheckCircle2
+                    className="size-3.5 text-green-600 dark:text-green-500"
+                    aria-label="Klijent je predao dokumentaciju"
+                  />
+                )}
+                {total > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    {done}/{total}
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}
@@ -131,6 +141,25 @@ function ClientPanel({ client }: { client: AdminClient }) {
           Klijent vidi samo svoju listu na /portal.
         </p>
       </div>
+
+      {/* Jedini trag da je klijent rekao "gotov sam" — inače se ne razlikuje
+          od onoga koji još slaže papire. Nestaje čim pošalje novi dokument. */}
+      {client.submitted_at && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-green-600/30 bg-green-500/5 px-3 py-2.5 text-sm">
+          <CheckCircle2 className="size-4 shrink-0 text-green-600 dark:text-green-500" />
+          <span>
+            Klijent je označio dostavu gotovom{" "}
+            <span className="text-muted-foreground">
+              ({new Date(client.submitted_at).toLocaleDateString("hr-HR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+              )
+            </span>
+          </span>
+        </div>
+      )}
 
       <Card className="mb-4">
         <CardContent className="pt-6">

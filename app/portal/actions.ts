@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { docKindFromName, extractText } from "@/lib/extract";
+import { getT } from "@/lib/i18n/server";
 import { matchDocument } from "@/lib/portal-ai";
 
 const BUCKET = "orbit-docs";
@@ -16,7 +17,7 @@ export async function getPortalContext() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, email, client_id, role")
+    .select("id, name, email, client_id, role")
     .eq("id", claims.sub)
     .single();
 
@@ -24,7 +25,7 @@ export async function getPortalContext() {
 
   const { data: client } = await supabase
     .from("clients")
-    .select("id, naziv, folder_path")
+    .select("id, naziv, folder_path, submitted_at")
     .eq("id", profile.client_id)
     .single();
 
@@ -49,23 +50,24 @@ export async function getPortalContext() {
  */
 export async function uploadPortalDoc(formData: FormData) {
   const supabase = await createClient();
+  const t = await getT();
 
   const ctx = await getPortalContext();
-  if (!ctx) return { error: "Nemaš pristup." };
+  if (!ctx) return { error: t.portal.nemasPristup };
 
   const file = formData.get("file") as File | null;
   const requestId = String(formData.get("requestId") ?? "");
-  if (!file || file.size === 0) return { error: "Nedostaje datoteka." };
+  if (!file || file.size === 0) return { error: t.portal.nedostajeDatoteka };
 
   if (file.size > 25 * 1024 * 1024) {
-    return { error: "Datoteka je veća od 25 MB." };
+    return { error: t.portal.prevelikaDatoteka };
   }
 
   // Stavka mora pripadati ovom klijentu — inače bi podmetnuti requestId
   // prepisao tuđi red. (Demo RLS je širok, pa provjera mora biti ovdje.)
   if (requestId) {
     const owned = ctx.items.some((i) => i.id === requestId);
-    if (!owned) return { error: "Nepoznata stavka." };
+    if (!owned) return { error: t.portal.nepoznataStavka };
   }
 
   const folder = (ctx.client.folder_path || `klijenti/${ctx.client.id}/`).replace(
@@ -80,7 +82,7 @@ export async function uploadPortalDoc(formData: FormData) {
   const { error: upErr } = await supabase.storage
     .from(BUCKET)
     .upload(path, buf, { upsert: true, contentType: file.type || undefined });
-  if (upErr) return { error: `Upload nije uspio: ${upErr.message}` };
+  if (upErr) return { error: t.portal.uploadNijeUspio.replace("{msg}", upErr.message) };
 
   const kind = docKindFromName(file.name);
   const text = await extractText(buf, kind);
@@ -151,7 +153,61 @@ export async function uploadPortalDoc(formData: FormData) {
     });
   }
 
+  // Novi dokument znači da klijent opet nešto mijenja — ranija predaja više ne
+  // stoji. Bez ovoga bi tim gledao "predano" nad hrpom koja se još miješa.
+  if (ctx.client.submitted_at) {
+    await supabase.from("clients").update({ submitted_at: null }).eq("id", ctx.client.id);
+  }
+
   revalidatePath("/portal");
   revalidatePath("/klijenti");
   return { ok: true, status: aiStatus, note: aiNote };
+}
+
+/**
+ * Klijent javlja da je gotov s dostavom.
+ *
+ * Ne zaključava upload: predaja je poruka timu, a ne kraj. Klijent koji se sjeti
+ * još jednog papira treba ga moći poslati bez da nas zove da mu otključamo.
+ */
+export async function submitPortal() {
+  const supabase = await createClient();
+  const t = await getT();
+
+  const ctx = await getPortalContext();
+  if (!ctx) return { error: t.portal.nemasPristup };
+
+  // Gumb se ionako ne prikaže dok nešto fali, ali klijent može poslati poziv i
+  // izravno — a i lista se mogla promijeniti otkad je stranica renderirana.
+  const missing = ctx.items.filter((i) => i.required && !i.uploaded);
+  if (missing.length) {
+    return {
+      error: t.portal.josNedostaje.replace("{items}", missing.map((i) => i.name).join(", ")),
+    };
+  }
+
+  const { error } = await supabase
+    .from("clients")
+    .update({ submitted_at: new Date().toISOString() })
+    .eq("id", ctx.client.id);
+  if (error) return { error: t.portal.predajaNijeUspjela };
+
+  revalidatePath("/portal");
+  revalidatePath("/klijenti");
+  return { ok: true };
+}
+
+/** Klijent se sjetio da mora još nešto — vraća dostavu u tijek. */
+export async function unsubmitPortal() {
+  const supabase = await createClient();
+  const t = await getT();
+
+  const ctx = await getPortalContext();
+  if (!ctx) return { error: t.portal.nemasPristup };
+
+  await supabase.from("clients").update({ submitted_at: null }).eq("id", ctx.client.id);
+
+  revalidatePath("/portal");
+  revalidatePath("/klijenti");
+  return { ok: true };
 }

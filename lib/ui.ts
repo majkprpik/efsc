@@ -42,7 +42,11 @@ export function urgency(days: number | null): "urg" | "warn" | "ok" {
 // Croatian short date, e.g. 18.5.
 export function shortDate(iso: string | null): string {
   if (!iso) return "—";
-  const d = new Date(iso + "T00:00:00");
+  // Goli datum ("2026-05-18") čitamo kao lokalni, inače ga UTC pomakne dan
+  // unatrag. Timestamp ("2026-05-18T06:30:00+00") već nosi vrijeme i zonu —
+  // njemu se T00:00:00 ne smije dodati, jer daje Invalid Date i "NaN.NaN.".
+  const d = new Date(iso.length === 10 ? `${iso}T00:00:00` : iso);
+  if (Number.isNaN(d.getTime())) return "—";
   return `${d.getDate()}.${d.getMonth() + 1}.`;
 }
 

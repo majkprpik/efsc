@@ -5,17 +5,19 @@ import { Upload, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { uploadPortalDoc } from "@/app/portal/actions";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/client";
 
 /** Upload za jednu stavku checkliste. */
 export function PortalUploadButton({
   requestId,
-  label = "Uploadaj",
+  label,
   variant = "outline",
 }: {
   requestId?: string;
   label?: string;
   variant?: "outline" | "default";
 }) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, start] = useTransition();
 
@@ -32,7 +34,7 @@ export function PortalUploadButton({
       if (res?.status === "issue" && res.note) {
         toast.warning(res.note, { duration: 8000 });
       } else {
-        toast.success("Dokument zaprimljen");
+        toast.success(t.portal.dokumentZaprimljen);
       }
     });
   }
@@ -61,7 +63,7 @@ export function PortalUploadButton({
         ) : (
           <Upload className="size-3.5" />
         )}
-        {pending ? "Šaljem…" : label}
+        {pending ? t.portal.saljem : (label ?? t.portal.uploadaj)}
       </Button>
     </>
   );
@@ -69,6 +71,7 @@ export function PortalUploadButton({
 
 /** Dropzone koja pušta AI da sam svrsta dokument. */
 export function PortalDropzone() {
+  const t = useT();
   const [drag, setDrag] = useState(false);
   const [pending, start] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +84,7 @@ export function PortalDropzone() {
       if (res?.error) toast.error(res.error);
       else if (res?.status === "issue" && res.note)
         toast.warning(res.note, { duration: 8000 });
-      else toast.success(`${file.name} zaprimljen`);
+      else toast.success(t.portal.datotekaZaprimljena.replace("{file}", file.name));
     });
   }
 
@@ -118,12 +121,8 @@ export function PortalDropzone() {
       ) : (
         <Upload className="size-6 text-muted-foreground" />
       )}
-      <div className="text-sm font-medium">
-        Povuci dokumente ovdje ili klikni za odabir
-      </div>
-      <div className="text-xs text-muted-foreground">
-        Ne moraš pogađati kamo spada — sami ćemo ga svrstati.
-      </div>
+      <div className="text-sm font-medium">{t.portal.povuciDokumente}</div>
+      <div className="text-xs text-muted-foreground">{t.portal.neMorasPogadjati}</div>
     </div>
   );
 }

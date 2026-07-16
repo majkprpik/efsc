@@ -118,6 +118,7 @@ export type Database = {
           phone: string | null
           saz: string | null
           status: Database["public"]["Enums"]["client_status"]
+          submitted_at: string | null
           tags: string[]
           unio_id: string | null
           unio_name: string | null
@@ -133,6 +134,7 @@ export type Database = {
           phone?: string | null
           saz?: string | null
           status?: Database["public"]["Enums"]["client_status"]
+          submitted_at?: string | null
           tags?: string[]
           unio_id?: string | null
           unio_name?: string | null
@@ -148,6 +150,7 @@ export type Database = {
           phone?: string | null
           saz?: string | null
           status?: Database["public"]["Enums"]["client_status"]
+          submitted_at?: string | null
           tags?: string[]
           unio_id?: string | null
           unio_name?: string | null

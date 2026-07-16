@@ -1,8 +1,12 @@
+"use client";
+
 import { CheckCircle2, Circle, FileText } from "lucide-react";
 import { PortalUploadButton, PortalDropzone, AiBadge } from "@/components/PortalUpload";
+import { PortalSubmit } from "@/components/PortalSubmit";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n/client";
 import { shortDate } from "@/lib/ui";
 
 export type ChecklistItem = {
@@ -25,10 +29,13 @@ export type ChecklistItem = {
 export function PortalChecklist({
   items,
   readOnly = false,
+  submittedAt = null,
 }: {
   items: ChecklistItem[];
   readOnly?: boolean;
+  submittedAt?: string | null;
 }) {
+  const t = useT();
   const required = items.filter((i) => i.required);
   const done = required.filter((i) => i.uploaded).length;
   const pct = required.length ? Math.round((done / required.length) * 100) : 100;
@@ -40,30 +47,32 @@ export function PortalChecklist({
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="mb-2 flex items-baseline justify-between">
-              <div className="text-sm font-medium">Dostavljeno</div>
+              <div className="text-sm font-medium">{t.portal.dostavljeno}</div>
               <div className="text-sm text-muted-foreground">
                 {done} / {required.length}
               </div>
             </div>
             <Progress value={pct} />
-            {done === required.length && (
-              <p className="mt-3 text-sm text-muted-foreground">
-                Sve je tu — javit ćemo se ako nešto zatreba.
-              </p>
-            )}
           </CardContent>
         </Card>
+      )}
+
+      {!readOnly && (
+        <PortalSubmit
+          submittedAt={submittedAt}
+          allDone={required.length > 0 && done === required.length}
+        />
       )}
 
       {items.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Trenutno nema traženih dokumenata. Javit ćemo se kad nešto zatreba.
+            {t.portal.nemaTrazenih}
           </CardContent>
         </Card>
       ) : (
         <>
-          <h2 className="mb-3 text-sm font-medium">Potrebni dokumenti</h2>
+          <h2 className="mb-3 text-sm font-medium">{t.portal.potrebniDokumenti}</h2>
           <div className="mb-8 flex flex-col gap-2">
             {required.map((item) => (
               <Card key={item.id}>
@@ -93,12 +102,12 @@ export function PortalChecklist({
 
                   {readOnly ? (
                     <Badge variant="secondary">
-                      {item.uploaded ? "Dostavljeno" : "Čeka"}
+                      {item.uploaded ? t.portal.dostavljenoStatus : t.portal.cekaStatus}
                     </Badge>
                   ) : (
                     <PortalUploadButton
                       requestId={item.id}
-                      label={item.uploaded ? "Zamijeni" : "Uploadaj"}
+                      label={item.uploaded ? t.portal.zamijeni : t.portal.uploadaj}
                       variant={item.uploaded ? "outline" : "default"}
                     />
                   )}
@@ -111,14 +120,14 @@ export function PortalChecklist({
 
       {extra.length > 0 && (
         <>
-          <h2 className="mb-3 text-sm font-medium">Ostalo dostavljeno</h2>
+          <h2 className="mb-3 text-sm font-medium">{t.portal.ostaloDostavljeno}</h2>
           <div className="mb-8 flex flex-col gap-2">
             {extra.map((item) => (
               <Card key={item.id}>
                 <CardContent className="flex items-center gap-3 py-3">
                   <FileText className="size-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1 truncate text-sm">{item.name}</div>
-                  <Badge variant="secondary">dodatno</Badge>
+                  <Badge variant="secondary">{t.portal.dodatno}</Badge>
                 </CardContent>
               </Card>
             ))}

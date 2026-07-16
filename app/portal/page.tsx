@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { getPortalContext } from "./actions";
 import { PortalChecklist } from "@/components/PortalChecklist";
+import { PortalChat } from "@/components/PortalChat";
+import { LocaleToggle } from "@/components/LocaleToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getT } from "@/lib/i18n/server";
 
 export default async function PortalPage() {
   const ctx = await getPortalContext();
@@ -10,6 +13,7 @@ export default async function PortalPage() {
   // Ulogiran, ali profil nije vezan na klijenta — nema što prikazati.
   if (!ctx) redirect("/portal/login?error=Račun nije povezan s klijentom.");
 
+  const t = await getT();
   const { client, profile, items } = ctx;
 
   return (
@@ -17,17 +21,20 @@ export default async function PortalPage() {
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
           <div className="text-[10px] uppercase tracking-[1.5px] text-muted-foreground">
-            Orbit · esfc.hr
+            {t.portal.podnaslov}
           </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{client.naziv}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Prijavljen kao {profile.email}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t.portal.prijavljenKao.replace("{email}", profile.email)}
+          </p>
         </div>
         <div className="flex items-center gap-1">
+          <LocaleToggle />
           <ThemeToggle />
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              title="Odjava"
+              title={t.portal.odjava}
               className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
             >
               <LogOut className="size-4" />
@@ -36,7 +43,9 @@ export default async function PortalPage() {
         </div>
       </header>
 
-      <PortalChecklist items={items} />
+      <PortalChecklist items={items} submittedAt={client.submitted_at} />
+
+      <PortalChat />
     </div>
   );
 }

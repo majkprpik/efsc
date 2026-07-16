@@ -14,7 +14,7 @@ export default async function PortalAdminPage({
     await Promise.all([
       supabase
         .from("clients")
-        .select("id, naziv, email, status")
+        .select("id, naziv, email, status, submitted_at")
         .order("naziv"),
       supabase
         .from("portal_requests")
@@ -34,6 +34,7 @@ export default async function PortalAdminPage({
     naziv: c.naziv,
     email: c.email,
     status: c.status,
+    submitted_at: c.submitted_at,
     users: (profileRows ?? [])
       .filter((p) => p.client_id === c.id)
       .map((p) => ({ id: p.id, email: p.email, name: p.name })),
