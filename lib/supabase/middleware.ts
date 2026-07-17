@@ -39,14 +39,14 @@ export async function updateSession(request: NextRequest) {
   // Točno /portal i /portal/*, ali NE /portal-admin — to je timska stranica.
   const isPortal = pathname === "/portal" || pathname.startsWith("/portal/");
 
-  const isAuthRoute =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/auth") ||
-    pathname.startsWith("/portal/login");
+  // Aplikacija je zatvorena: neprijavljeni posjetitelj smije SAMO stranicu za
+  // zahtjev pristupa (/pristup). Nema prijave, nema registracije, nema magic
+  // linka — jedino polje za mail koje upis sprema u access_requests.
+  const isPristup = pathname === "/pristup";
 
-  if (!user && !isAuthRoute) {
+  if (!user && !isPristup) {
     const url = request.nextUrl.clone();
-    url.pathname = isPortal ? "/portal/login" : "/login";
+    url.pathname = "/pristup";
     return NextResponse.redirect(url);
   }
 
@@ -72,7 +72,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && (pathname === "/login" || pathname === "/portal/login")) {
+  // Prijavljeni koji sleti na /pristup ide na svoju početnu.
+  if (user && pathname === "/pristup") {
     const url = request.nextUrl.clone();
     url.pathname = isClient ? "/portal" : "/";
     return NextResponse.redirect(url);
